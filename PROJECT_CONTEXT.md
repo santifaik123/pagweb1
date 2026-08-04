@@ -68,6 +68,16 @@ static HTML export in `out/`.
 - `lib/nuvik-service-content.ts`: detailed service-page copy.
 - `lib/seo.ts`: metadata, canonical URLs, JSON-LD helpers, and brand constants.
 - `components/seo/JsonLd.tsx` and `components/seo/Analytics.tsx`: SEO scripts.
+- `components/integrations/NuvikNexusChat.tsx`: non-intrusive NUVIK chat client connected to NexusChat on Render.
+- `netlify/functions/create-lead.mjs`: validated, rate-limited contact persistence in Neon.
+- `netlify.toml`: Netlify static export, functions, redirects, cache, and security headers.
+
+## Production Integrations
+
+- Microsoft Clarity and PostHog are initialized globally from public project IDs; environment variables can override them.
+- Contact forms POST to `/.netlify/functions/create-lead` and require the private `DATABASE_URL` Netlify runtime variable.
+- The lead function creates or extends the `leads` table safely, applies honeypot/content checks, Netlify rate limiting, database rate limiting, and stores only a salted IP hash.
+- Nuvi connects directly to the public NexusChat API on Render with tenant `nuvik`. The Groq API key remains only in the Render service environment and must never use a `NEXT_PUBLIC_` variable.
 
 ## Assets
 
