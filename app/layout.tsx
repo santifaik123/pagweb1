@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
+import { NuvikNexusChat } from "@/components/integrations/NuvikNexusChat";
 import { Analytics } from "@/components/seo/Analytics";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Toaster } from "@/components/ui/sonner";
@@ -106,6 +107,7 @@ export default function RootLayout({
         />
         <TooltipProvider>{children}</TooltipProvider>
         <Toaster position="top-right" richColors />
+        <NuvikNexusChat />
         <Analytics />
       </body>
     </html>
