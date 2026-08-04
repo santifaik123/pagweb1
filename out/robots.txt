@@ -1,28 +1,55 @@
 User-Agent: *
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: OAI-SearchBot
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: ChatGPT-User
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: Claude-User
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: Claude-SearchBot
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: PerplexityBot
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 User-Agent: Perplexity-User
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 Sitemap: https://nuvik.digital/sitemap.xml
