@@ -138,13 +138,15 @@ const handler = async (request, context) => {
   if ((mensaje.match(/https?:\/\/|www\./gi) || []).length > 1) return json(422, { ok: false, error: "El mensaje contiene demasiados enlaces." }, origin);
   if (SPAM_TERMS.some((term) => combined.toLowerCase().includes(term))) return json(200, { ok: true }, origin);
 
-  if (!process.env.DATABASE_URL) {
-    console.error("create-lead: DATABASE_URL is not configured");
+  const databaseUrl = process.env.NETLIFY_DB_URL || process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    console.error("create-lead: NETLIFY_DB_URL or DATABASE_URL is not configured");
     return json(503, { ok: false, error: "El formulario está temporalmente fuera de servicio." }, origin);
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL);
+    const sql = neon(databaseUrl);
     schemaPromise ||= ensureSchema(sql);
     await schemaPromise;
 
