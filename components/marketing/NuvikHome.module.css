@@ -3060,6 +3060,32 @@
   resize: vertical;
 }
 
+.contactPanelForm .contactConsent {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 12px;
+  color: #b8babb;
+  font-family: "NUVIK Inter", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1.55;
+  text-transform: none;
+}
+
+.contactPanelForm .contactConsent input {
+  width: 18px;
+  min-height: 18px;
+  margin-top: 1px;
+  accent-color: #f3f3ef;
+}
+
+.contactConsent a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .contactPanelForm input:focus,
 .contactPanelForm textarea:focus {
   border-color: #fff;
