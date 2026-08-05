@@ -1,9 +1,29 @@
+"use client";
+
 import Script from "next/script";
+import posthog from "posthog-js";
+import { useEffect } from "react";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "w7qblbtkl4";
+const POSTHOG_KEY =
+  process.env.NEXT_PUBLIC_POSTHOG_KEY || "phc_BM2yNnaar6rLSj5bEW5PWN7yWzUC3k7oQacCKRy4H4u2";
+const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
 
 export function Analytics() {
+  useEffect(() => {
+    if (!POSTHOG_KEY || posthog.__loaded) return;
+
+    posthog.init(POSTHOG_KEY, {
+      api_host: POSTHOG_HOST,
+      defaults: "2026-01-30",
+      person_profiles: "identified_only",
+      capture_pageview: true,
+      capture_pageleave: true,
+      session_recording: { maskAllInputs: true },
+    });
+  }, []);
+
   return (
     <>
       {GA_ID ? (
