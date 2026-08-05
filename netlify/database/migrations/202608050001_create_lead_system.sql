@@ -30,6 +30,60 @@ CREATE TABLE IF NOT EXISTS leads (
   deleted_at TIMESTAMPTZ
 );
 
+-- Upgrade the original pagweb1 lead table in place. The first production
+-- version used Spanish column names, so every new column is added before any
+-- index references it and legacy rows are backfilled without being deleted.
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS external_id VARCHAR(64);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'nuvik';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS full_name VARCHAR(100);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS company VARCHAR(150);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS inquiry_type VARCHAR(120) DEFAULT 'Consulta general';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS message TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS status VARCHAR(24) DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'qualified', 'won', 'lost', 'archived'));
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS consent_contact BOOLEAN DEFAULT FALSE;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS privacy_version VARCHAR(32);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS consented_at TIMESTAMPTZ;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS referrer_host VARCHAR(253);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS landing_path VARCHAR(300);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS nexus_synced BOOLEAN DEFAULT FALSE;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS nexus_lead_id VARCHAR(100);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS nexus_sync_attempted_at TIMESTAMPTZ;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS nexus_sync_error_code VARCHAR(50);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS retention_delete_after TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '365 days');
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+UPDATE leads
+SET external_id = COALESCE(external_id, 'legacy-' || id::text),
+    tenant_id = COALESCE(tenant_id, 'nuvik'),
+    inquiry_type = COALESCE(inquiry_type, 'Consulta general'),
+    status = COALESCE(status, 'new'),
+    consent_contact = COALESCE(consent_contact, FALSE),
+    privacy_version = COALESCE(privacy_version, 'legacy-v1'),
+    nexus_synced = COALESCE(nexus_synced, FALSE),
+    retention_delete_after = COALESCE(retention_delete_after, created_at + INTERVAL '365 days'),
+    updated_at = COALESCE(updated_at, created_at);
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'nombre') THEN
+    EXECUTE 'UPDATE leads SET full_name = COALESCE(full_name, nombre), company = COALESCE(company, negocio), inquiry_type = COALESCE(tipo, inquiry_type), message = COALESCE(message, mensaje)';
+  END IF;
+END $$;
+
+ALTER TABLE leads ALTER COLUMN external_id SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN tenant_id SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN full_name SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN message SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN status SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN consent_contact SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN privacy_version SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN nexus_synced SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN retention_delete_after SET NOT NULL;
+ALTER TABLE leads ALTER COLUMN updated_at SET NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leads_external_id ON leads (external_id);
+
 CREATE INDEX IF NOT EXISTS idx_leads_tenant_created ON leads (tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_email_created ON leads (email, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_ip_hash_created ON leads (ip_hash, created_at DESC) WHERE ip_hash IS NOT NULL;
