@@ -23,7 +23,7 @@ export default function PrivacyPage() {
           {
             title: "Datos que pueden recopilarse",
             body: [
-              "Al completar un formulario podemos recibir nombre, email, empresa, mensaje, servicio de interés, página de origen y parámetros de campaña. Para prevenir abuso se conserva un hash irreversible de la dirección IP, no la dirección IP en texto legible.",
+              "Al completar un formulario podemos recibir nombre, email, empresa opcional, mensaje, servicio de interés, ruta de origen y parámetros de campaña. Para prevenir abuso se conserva un hash irreversible de la dirección IP, no la dirección IP en texto legible. No solicitamos RUT, ubicación precisa, información financiera, de salud ni otras categorías sensibles.",
               "Al usar el asistente Nuvi, NexusChat procesa el contenido de la conversación y un identificador de sesión para generar respuestas y mantener el contexto.",
             ],
           },
@@ -37,8 +37,8 @@ export default function PrivacyPage() {
           {
             title: "Uso y conservación",
             body: [
-              "Usamos la información para responder consultas, preparar cotizaciones, coordinar conversaciones comerciales, proteger el formulario contra spam y mejorar la experiencia del sitio.",
-              "Nuvik Digital no vende datos personales. Conservamos la información comercial solo durante el tiempo necesario para responder, dar seguimiento y cumplir obligaciones aplicables.",
+              "Usamos la información para responder consultas, preparar cotizaciones, coordinar conversaciones comerciales, proteger el formulario contra spam y mejorar la experiencia del sitio. El formulario solicita consentimiento antes del envío.",
+              "Nuvik Digital no vende datos personales. Las solicitudes se revisan para eliminación o anonimización después de 365 días, salvo que exista una relación comercial u obligación que justifique conservarlas por más tiempo.",
             ],
           },
           {

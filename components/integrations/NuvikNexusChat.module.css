@@ -46,7 +46,7 @@
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;
+  border-radius: var(--nexus-radius, 18px);
   color: #f7f7f5;
   background: #181a1b;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
@@ -149,7 +149,7 @@
 
 .suggestion {
   padding: 8px 10px;
-  border: 1px solid #55585a;
+  border: 1px solid color-mix(in srgb, var(--nexus-secondary, #9da0a2) 58%, #181a1b);
   border-radius: 999px;
   color: #d9dbdb;
   background: transparent;
@@ -182,7 +182,7 @@
 }
 
 .composer input:focus {
-  border-color: #bfc1c1;
+  border-color: var(--nexus-secondary, #bfc1c1);
 }
 
 .send {
@@ -190,10 +190,10 @@
   width: 42px;
   height: 42px;
   padding: 0;
-  border: 1px solid #f3f3ef;
+  border: 1px solid var(--nexus-primary, #f3f3ef);
   border-radius: 10px;
   color: #181a1b;
-  background: #f3f3ef;
+  background: var(--nexus-primary, #f3f3ef);
   cursor: pointer;
   place-items: center;
 }

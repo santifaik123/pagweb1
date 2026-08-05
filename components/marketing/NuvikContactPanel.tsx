@@ -40,6 +40,7 @@ export function NuvikContactPanel({ open, onClose, context }: NuvikContactPanelP
     const formData = new FormData(form);
     const search = new URLSearchParams(window.location.search);
     const payload = {
+      submission_id: globalThis.crypto?.randomUUID?.() || `lead-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       nombre: formData.get("name"),
       email: formData.get("email"),
       negocio: formData.get("company"),
@@ -51,8 +52,9 @@ export function NuvikContactPanel({ open, onClose, context }: NuvikContactPanelP
       utm_medium: search.get("utm_medium"),
       utm_campaign: search.get("utm_campaign"),
       utm_content: search.get("utm_content"),
+      consent_contact: formData.get("consent_contact") === "yes",
       referrer: document.referrer,
-      landing_page: window.location.href,
+      landing_page: window.location.pathname,
       device: window.matchMedia("(max-width: 760px)").matches ? "mobile" : "desktop",
     };
 
@@ -119,6 +121,10 @@ export function NuvikContactPanel({ open, onClose, context }: NuvikContactPanelP
               <label>
                 ¿Qué necesitas construir?
                 <textarea name="message" required minLength={10} maxLength={2000} placeholder={context ? `Cuéntanos qué necesitas resolver con ${context.toLowerCase()}` : "Cuéntanos sobre el proyecto, objetivo y plazo"} rows={5} />
+              </label>
+              <label className={styles.contactConsent}>
+                <input name="consent_contact" type="checkbox" value="yes" required />
+                <span>Acepto que NUVIK use estos datos únicamente para responder esta solicitud. <a href="/privacidad" target="_blank" rel="noreferrer">Ver privacidad</a>.</span>
               </label>
               {error ? <p className={styles.contactPanelError} role="alert">{error}</p> : null}
               <button type="submit" disabled={submitting}>{submitting ? "Enviando…" : "Enviar solicitud"} <ArrowUpRight size={18} /></button>
