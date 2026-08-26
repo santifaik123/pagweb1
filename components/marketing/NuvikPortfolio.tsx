@@ -19,6 +19,16 @@ const navLinks = [
 
 const portfolioItems = [
   {
+    name: "ITO-e",
+    category: "Web corporativa",
+    title: "Una web que ordena la inspección técnica de obra.",
+    description:
+      "Sitio corporativo diseñado y desarrollado para ITO-e: narrativa editorial, secciones interactivas y una arquitectura orientada a solicitar demos.",
+    href: "https://www.ito-e.cl/",
+    image: "/assets/sections/ito-e-showcase.webp",
+    cta: "Visitar ito-e.cl",
+  },
+  {
     name: "Dar.io",
     category: "Software operativo",
     title: "Gestión en tiempo real para negocios que necesitan control.",

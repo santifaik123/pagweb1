@@ -87,6 +87,7 @@ static HTML export in `out/`.
 - Automatizaciones: `public/assets/sections/automations.webp`
 - Sitios a medida: `public/assets/sections/sites.webp`
 - Interoperability/service visual: `public/assets/sections/interoperability.webp`
+- ITO-e (caso de cliente en `/portafolio`): `public/assets/sections/ito-e-showcase.webp`
 - NUVIK logo assets: `public/assets/logos/nuvik-symbol.webp` and
   `public/assets/logos/nuvik-symbol-white.png`
 - MachReach mark: `public/assets/logos/machreach.svg`

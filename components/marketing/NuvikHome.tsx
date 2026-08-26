@@ -86,6 +86,19 @@ const suiteItems = [
     containImage: true,
     brandVisual: true,
   },
+  {
+    name: "ITO-e",
+    type: "Web corporativa",
+    index: "06",
+    title: "Una web que ordena la inspección técnica de obra.",
+    body: "Sitio corporativo diseñado y desarrollado para ITO-e, con narrativa editorial y una arquitectura orientada a solicitar demos.",
+    stamp: "Caso real de cliente",
+    link: "Visitar ito-e.cl",
+    href: "https://www.ito-e.cl/",
+    image: "/assets/sections/ito-e-showcase.webp",
+    containImage: false,
+    brandVisual: false,
+  },
 ];
 
 const suiteCarouselItems = [suiteItems[suiteItems.length - 1], ...suiteItems, suiteItems[0]];
