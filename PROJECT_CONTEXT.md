@@ -90,7 +90,8 @@ static HTML export in `out/`.
 - ITO-e (caso de cliente en `/portafolio`): `public/assets/sections/ito-e-showcase.webp`
 - NUVIK logo assets: `public/assets/logos/nuvik-symbol.webp` and
   `public/assets/logos/nuvik-symbol-white.png`
-- MachReach mark: `public/assets/logos/machreach.svg`
+- MachReach mark: `public/assets/logos/machreach.svg` (flame + libro, sin squircle morado — igual al logo vigente de machreach.com)
+- MachReach (tarjeta de `/portafolio`): `public/assets/sections/machreach-showcase.svg`
 
 ## Current Experience
 

@@ -75,7 +75,7 @@ const portfolioItems = [
     description:
       "Integra sesiones de enfoque, seguimiento de cursos, flashcards y quizzes con IA para organizar el estudio y proteger el tiempo de concentración.",
     href: "https://machreach.com/",
-    image: "/assets/machreach-showcase.png",
+    image: "/assets/sections/machreach-showcase.svg",
     cta: "Abrir MachReach",
   },
 ];
