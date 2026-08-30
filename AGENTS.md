@@ -41,7 +41,6 @@ This repository is only the NUVIK Digital website. Keep future work scoped to th
 - The Suite carousel supports touch/mouse horizontal swipe while preserving vertical page scroll.
 - Suite visual stamps are dark liquid-glass and show only product name plus a 3-5 word benefit line.
 - Product links open `/dar.io`, `/nexus`, `/automatizaciones`, and `/servicios`; MachReach opens externally.
-- The Suite carousel closes with ITO-e (`06`), a client case that opens `https://www.ito-e.cl/` externally.
 - `/portafolio` uses a Palantir Newsroom-inspired editorial portfolio grid for Dar.io, NexusChatBot, Automatizaciones, Sitios a medida, and MachReach.
 - Offscreen imagery remains lazy-loaded and public raster visuals stay in `public/assets/hero`, `public/assets/sections`, and `public/assets/logos`.
 
