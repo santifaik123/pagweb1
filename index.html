@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nuvik Digital — Estudio digital en Santiago, Chile</title>
+<meta name="description" content="Estudio digital en Santiago. Software a medida, automatización, dashboards, sitios y agentes de IA." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   NUVIK — tokens
+   Layout and motion system measured from the reference at 1280px.
+   Display sizes in vw so the type scale tracks the viewport.
+   ============================================================ */
+:root{
+  --ink:        #232323;
+  --bg:         #ffffff;
+  --bg-body:    #f8f8f8;
+  --bg-alt:     #f1f1f1;
+  --dark:       #232323;
+  --on-dark:    #f1f1f1;
+
+  /* tints for the oversized service headings */
+  --t1:#f5f5f5; --t2:#ececec; --t3:#efefef;
+  --t4:#f3f3f3; --t5:#f0f0f0; --t6:#e8e8e8;
+  --pink:#e4e4e4;   /* la pagina es blanco y negro; el color vive solo en el portafolio */
+  --titulo-trabajo:#232323;  /* titulo del bloque de trabajo, en tinta */
+
+  /* type scale */
+  --fs-hero:    7.57vw;
+  --fs-display: 9.24vw;
+  --fs-service: 9.58vw;
+  --fs-h3:      2.64vw;
+  --fs-body:    14.5px;   /* de aqui cuelgan nav, rotulos, bajadas y el panel del tambor */
+
+  --lh-hero: .79;
+  --ls-display: -.04em;
+
+  --gutter: 2.5vw;
+  --ease: cubic-bezier(.32,0,.12,1);
+
+  --font: 'Inter Tight','Helvetica Now Display','Neue Haas Grotesk Display',
+          'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+/* Barra de scroll oculta. Solo se esconde la barra: el scroll sigue
+   funcionando con rueda, teclado y gestos. */
+html{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar{width:0;height:0;display:none}
+body::-webkit-scrollbar{width:0;height:0;display:none}
+body{
+  font-family:var(--font);font-size:var(--fs-body);line-height:1.2;
+  color:var(--ink);background:var(--bg-body);
+  overflow-x:clip;                     /* clip, not hidden — hidden kills sticky */
+}
+.page{background:var(--bg);position:relative;overflow-x:clip}
+img,video,canvas{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,h4{font-weight:400;letter-spacing:var(--ls-display);line-height:1}
+._container{width:100%;padding:0 var(--gutter);margin:0 auto}
+.eyebrow{display:flex;justify-content:space-between;font-size:var(--fs-body)}
+
+/* ============ INTRO ============
+   Capa encima del sitio real. El fondo lleva la mascara del iris;
+   la marca va aparte para que el iris no se la coma mientras vuela.
+   ============================================================ */
+.intro{position:fixed;inset:0;z-index:9998;pointer-events:none}
+.intro__fondo{position:absolute;inset:0;background:#0e0e0f}
+.intro__grano{
+  position:absolute;inset:-6%;opacity:.55;
+  background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1px);
+  background-size:34px 34px;
+}
+.intro__halo{
+  position:absolute;left:-14%;bottom:-34%;width:74vw;height:74vw;border-radius:50%;
+  /* el diseño traia halo rosado; el sitio va en blanco y negro */
+  background:radial-gradient(circle,rgba(255,255,255,.14),rgba(255,255,255,.045) 46%,transparent 70%);
+}
+/* La marca cuelga del body, no de .intro, y mezcla en modo difference:
+   sobre el fondo oscuro se ve blanca; cuando el iris abre y queda la
+   pagina blanca detras, se ve negra. Siempre el negativo de lo que hay. */
+.intro__marca{
+  position:fixed;left:50%;top:50%;z-index:9999;
+  pointer-events:none;mix-blend-mode:difference;
+  will-change:transform,opacity;
+}
+.intro__marca img{position:absolute;inset:0;width:100%;height:100%;will-change:transform,opacity}
+/* mientras corre el intro no se puede hacer scroll */
+html.intro-activo,html.intro-activo body{overflow:hidden}
+
+/* ============ HEADER ============ */
+.header{
+  position:fixed;top:0;left:0;width:100%;z-index:100;
+  display:grid;grid-template-columns:1fr 1fr 1fr;align-items:start;
+  padding:var(--gutter);mix-blend-mode:difference;color:#fff;
+  transition:transform .5s var(--ease),opacity .5s var(--ease);
+}
+.header.is-hidden{transform:translateY(-120%);opacity:0}
+.header__logo{display:flex;align-items:center;gap:.55vw;font-size:1.35vw;font-weight:700;letter-spacing:-.04em;line-height:1}
+.header__logo img{width:1.9vw;height:1.9vw;object-fit:contain}
+/* El mismo rotulo vive en la cabecera y en el hero. El de arriba
+   arranca invisible y solo entra cuando el de abajo sale de pantalla,
+   asi nunca se lee "Estudio digital" dos veces a la vez. */
+.header__tagline{
+  opacity:0;pointer-events:none;
+  transition:opacity .45s var(--ease);
+}
+.header__tagline.se-ve{opacity:1;pointer-events:auto}
+.header__tagline p:first-child{font-weight:700}
+.header__nav{display:flex;gap:1.6vw;justify-self:end}
+.link{position:relative;display:inline-block;overflow:hidden;height:1.2em;
+  vertical-align:top;font-size:22.5px;letter-spacing:-.02em}
+.link__inner{display:block;transition:transform .45s var(--ease)}
+.link__inner span{display:block}
+.link:hover .link__inner{transform:translateY(-50%)}
+
+/* ============ HERO ============ */
+.main-hero{position:relative;padding-top:19vh}
+.main-hero__head{display:flex;justify-content:space-between;align-items:flex-end;padding:0 var(--gutter) 2vh}
+.main-hero__year{display:flex;gap:.6vw}
+.main-hero__title{
+  font-size:var(--fs-hero);line-height:var(--lh-hero);letter-spacing:var(--ls-display);
+  padding:0 var(--gutter);white-space:nowrap;
+}
+.main-hero__title .row{display:block;overflow:hidden;padding-bottom:.14em;margin-bottom:-.14em}
+.main-hero__title .row > span{display:block;transform:translateY(105%);transition:transform 1.2s var(--ease)}
+.is-ready .main-hero__title .row > span{transform:translateY(0)}
+.is-ready .main-hero__title .row:nth-child(2) > span{transition-delay:.08s}
+.is-ready .main-hero__title .row:nth-child(3) > span{transition-delay:.16s}
+
+.main-hero__body{position:relative;height:100vh;margin-top:2vh}
+.video__media{
+  position:relative;height:100%;overflow:hidden;background:#07080d;
+  /* arranca recortado y oculto; el scroll lo abre. Los valores los
+     escribe el bucle, esto es solo el estado inicial si el JS no corre. */
+  will-change:clip-path,opacity;
+}
+/* Sin opacidad inicial en CSS a proposito: si el JS no corre, el video se
+   ve normal. El bucle le pone el estado de partida en su primera pasada. */
+.video__media video,.video__media canvas{width:100%;height:100%;object-fit:cover;display:block}
+/* ============ VALORES (sticky word reveal) ============ */
+.main-values{position:relative;height:300vh;background:var(--bg-alt)}
+.main-values__sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center}
+.main-values__content{width:100%;padding:0 var(--gutter)}
+.main-values__text{font-size:4.3vw;line-height:1.12;letter-spacing:-.03em;max-width:80vw}
+.main-values__text .w{display:inline-block;opacity:.13;transition:opacity .25s linear}
+.main-values__text .w.on{opacity:1}
+.main-values__sub{
+  margin-top:4vh;max-width:34vw;opacity:0;transform:translateY(14px);
+  transition:all .8s var(--ease);
+}
+.main-values__sub.on{opacity:1;transform:none}
+.main-values__meta{
+  position:absolute;right:var(--gutter);bottom:var(--gutter);
+  display:flex;flex-direction:column;gap:.35em;text-align:right;
+}
+
+/* ============ TRABAJO ============
+   Mecánica calcada de la referencia:
+   head 20.8333vw con degradado, body de N*100vh, scroller sticky 100vh,
+   cada item 100vh anclado abajo revelándose de abajo hacia arriba.
+   ============================================================ */
+.works{position:relative}
+.works__head{height:20.8333vw;display:flex;align-items:flex-end;position:relative;overflow:hidden}
+.works__head-gradient{position:absolute;inset:0;background:linear-gradient(var(--bg-alt),var(--pink))}
+.works__head-title{
+  position:relative;display:flex;justify-content:space-between;width:100%;
+  color:var(--titulo-trabajo);font-weight:700;font-size:21.0417vw;letter-spacing:-.04em;
+  line-height:.78;pointer-events:none;padding:0 1.11111vw;white-space:nowrap;
+}
+.works__body{position:relative;color:#fff}
+.works__items-scroller{position:sticky;top:0;left:0;height:100vh;width:100%}
+.works__items{position:relative;height:100vh;overflow:hidden;
+  /* mismo tono que .cortina: el fondo que se ve entre slides
+     ya no es el casi-negro del banner, es la tinta del sitio */
+  background:var(--ink);
+}
+.works__item{position:absolute;left:0;bottom:0;width:100%;height:100vh;overflow:hidden;cursor:pointer;
+  isolation:isolate;   /* sin esto los logos con z-index se cuelan sobre los slides siguientes */
+}
+.works__item-inner{position:absolute;left:0;bottom:0;width:100%;height:100vh}
+.works__item-photo{position:absolute;inset:0}
+.works__enlace{position:absolute;inset:0;z-index:6;cursor:pointer}
+
+
+/* cortina de transicion entre paginas */
+.cortina{
+  position:fixed;inset:0;z-index:9999;background:var(--ink);
+  transform:translateY(100%);pointer-events:none;
+  transition:transform .56s var(--ease);
+}
+.cortina--dentro{transform:translateY(0);pointer-events:auto}
+.cortina--fuera{transform:translateY(-100%)}
+/* lockup de marca: sello arriba, nombre en tipografia debajo */
+/* El sello va centrado en absoluto y con caja FIJA, no en un flex en
+   columna. Con flex, las diapositivas que ademas llevan nombre
+   (MachReach, ITO-e) empujaban el sello hacia arriba, mientras que las
+   que solo llevan sello (Dar.io, Nexus, Nuvik) lo dejaban al centro:
+   al apilarse, el logo saltaba de posicion. Con caja fija todos los
+   logos ocupan el mismo rectangulo y el apilado se ve continuo. */
+.lockup{
+  position:absolute;inset:0;z-index:5;pointer-events:none;text-align:center;
+  /* La caja del sello vive en variables y el nombre se coloca a partir
+     de ellas. Antes el desplazamiento era un numero fijo calculado para
+     el sello por defecto, asi que en ITO-e —que lo tiene mucho mas alto—
+     el texto quedaba encima del logo. */
+  --sello-an:13vw; --sello-al:19vh; --aire:2.6vh;
+}
+.lockup__sello{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:var(--sello-an);height:var(--sello-al);object-fit:contain;
+}
+.lockup__nombre{
+  position:absolute;left:50%;
+  top:calc(50% + var(--sello-al) / 2 + var(--aire));
+  transform:translateX(-50%);white-space:nowrap;
+  font-size:3.6vw;line-height:1;letter-spacing:-.04em;font-weight:700;color:#fff;
+}
+.lockup--foto .lockup__nombre{text-shadow:0 2px 26px rgba(0,0,0,.55)}
+.lockup--foto .lockup__sello{filter:drop-shadow(0 2px 26px rgba(0,0,0,.45))}
+.lockup__nombre i{font-style:normal}
+@media (max-width:900px){
+  /* las capturas verticales ya traen su marca puesta: el simbolo
+     encima solo tapaba */
+  .lockup--foto{display:none}
+  .lockup{--sello-an:30vw; --sello-al:16vh; --aire:1.8vh}
+  .lockup__nombre{font-size:8vw}
+  .lockup--itoe{--sello-an:34vw; --sello-al:18vh}
+}
+.works__item-photo img{width:100%;height:100%;object-fit:cover}
+/* En vertical, 'cover' recorta una captura 16:9 a una tira central y no
+   se entiende nada. Con 'contain' entra completa sobre el fondo. */
+@media (max-aspect-ratio:1/1){
+  .works__item-photo img{object-fit:contain;background:#0e0e0f}
+}
+/* sin velo ni texto: solo la imagen */
+
+/* ---- BANNERS de marca: arte a sangre, el logo como foco ---- */
+.banner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.banner__art{position:absolute;inset:0;pointer-events:none}
+.banner img{
+  position:relative;z-index:3;width:auto;height:auto;
+  max-width:22vw;max-height:30vh;object-fit:contain;
+}
+
+/* NUVIK - campo oscuro, halo blanco, retícula de puntos */
+/* mismo tono que .cortina y el resto de las transiciones: antes este
+   degradado terminaba en #0d0d0d (negro full) y contra el cafe de la
+   foto de Dar.io el corte se veia duro */
+/* Fondo tomado del video del intro: una viñeta radial elíptica, sin
+   retícula ni aro. Las paradas salen de medir el video cuadro a cuadro
+   — #1c1a1b justo al centro cayendo a #080808 en los bordes — y la
+   elipse es más angosta que alta porque en el video el degradado llega
+   al piso antes en horizontal que en vertical. */
+.banner--nuvik{
+  background:
+    radial-gradient(ellipse 42% 50% at 50% 50%,
+      #1c1a1b 0%,
+      #1b191a 20%,
+      #191718 40%,
+      #151314 60%,
+      #0f0f0f 80%,
+      #0a0a0a 94%,
+      #080808 100%),
+    #080808;
+}
+
+/* MACHREACH - indigo profundo con el resplandor de la llama desde abajo */
+.banner--machreach{background:linear-gradient(180deg,#191033 0%,#2a1e4f 58%,#3a2a63 100%)}
+.banner--machreach .b-glow{
+  left:50%;bottom:-22%;width:86vw;height:86vw;inset:auto;position:absolute;
+  transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(255,106,43,.44),rgba(217,75,20,.15) 40%,transparent 66%);
+}
+
+/* ITO-e - blanco plano */
+.banner--itoe{background:#ffffff}
+/* ITO-e usa la misma caja que el resto: antes tenia 21vw/34vh y su
+   logo salia casi al doble que el de Nuvik. El nombre se reacomoda
+   solo, porque su posicion se calcula desde --sello-al. */
+.lockup--itoe .lockup__nombre{
+  color:#0b2f87;font-size:5.4vw;font-weight:300;letter-spacing:.015em;line-height:.9;
+}
+.lockup--itoe .lockup__nombre sup{
+  font-size:.42em;vertical-align:super;letter-spacing:0;font-weight:300;
+}
+
+@media (max-width:1025px){
+}
+
+/* ============ SERVICIOS ============
+   Tambor 3D de doce caras. Las caras se reparten en un cilindro
+   (rotateX + translateZ) y el eje entero gira; el panel de la izquierda
+   sigue a la cara que quede al frente. Los numeros son los del diseno:
+   12 caras, 30 grados de paso, radio 190, cara de 96px. */
+.main-services{
+  position:relative;background:var(--bg-alt);color:var(--ink);
+  padding:9vh var(--gutter);
+  display:flex;flex-direction:column;gap:5vh;
+  font-size:var(--fs-body);line-height:1.2;
+}
+.svc-cab{
+  display:flex;justify-content:space-between;
+  border-top:1px solid rgba(35,35,35,.16);padding-top:14px;
+}
+.svc-rej{
+  display:grid;grid-template-columns:minmax(0,30vw) minmax(0,1fr);
+  gap:4vw;align-items:center;
+}
+
+/* ---- panel izquierdo ---- */
+.svc-panel{display:flex;flex-direction:column;gap:3.2vh}
+.svc-panel__titulo{
+  font-size:3.6vw;line-height:.98;letter-spacing:-.045em;font-weight:400;margin:0;
+}
+.svc-info{
+  display:flex;flex-direction:column;gap:14px;
+  transition:opacity .5s cubic-bezier(.22,.61,.36,1);
+}
+.svc-info--mueve{opacity:.42}          /* se apaga mientras el tambor gira */
+.svc-info__fila{display:flex;align-items:center;gap:10px}
+.svc-info__punto{
+  width:9px;height:9px;border:1px solid var(--ink);border-radius:50%;
+  background:transparent;
+}
+.svc-info__punto--lleno{background:var(--ink)}
+.svc-info__frente{letter-spacing:.14em;text-transform:uppercase}
+.svc-info__num{opacity:.4;font-variant-numeric:tabular-nums}
+.svc-info__desc{margin:0;line-height:1.5;max-width:26em;min-height:4.5em}
+.svc-info__ir{
+  align-self:flex-start;border-bottom:1px solid currentColor;padding-bottom:.15em;
+  transition:opacity .35s var(--ease);
+}
+.svc-info__ir:hover{opacity:.55}
+
+/* ---- pastillas de grupo ---- */
+.svc-tabs{
+  display:flex;flex-wrap:wrap;gap:10px;
+  border-top:1px solid rgba(35,35,35,.16);padding-top:16px;
+}
+.svc-tab{
+  display:flex;align-items:center;gap:9px;
+  font-family:inherit;font-size:var(--fs-body);color:var(--ink);cursor:pointer;
+  padding:11px 18px;border-radius:999px;background:#fff;
+  border:1px solid rgba(35,35,35,.16);
+  box-shadow:0 0 0 rgba(35,35,35,0);
+  transform:translateY(0) scale(1);
+  transition:background .28s var(--ease),color .28s var(--ease),
+             border-color .28s var(--ease),transform .18s var(--ease),
+             box-shadow .28s var(--ease);
+}
+.svc-tab:hover{
+  transform:translateY(-2px) scale(1.015);border-color:var(--ink);
+  box-shadow:0 6px 18px rgba(35,35,35,.14);
+}
+.svc-tab:active{transform:translateY(0) scale(.965);box-shadow:0 1px 4px rgba(35,35,35,.16)}
+.svc-tab:focus{outline:none;border-color:var(--ink)}
+.svc-tab--act{border-color:rgba(35,35,35,.42);box-shadow:0 2px 10px rgba(35,35,35,.10)}
+.svc-tab__punto{
+  width:9px;height:9px;border-radius:50%;background:transparent;
+  border:1px solid currentColor;transition:background .28s var(--ease);
+}
+.svc-tab--act .svc-tab__punto{background:var(--ink)}
+
+/* ---- el tambor ---- */
+.svc-tambor{
+  position:relative;height:56vh;min-height:380px;
+  perspective:1400px;cursor:ns-resize;
+  /* se difumina arriba y abajo para que las caras no se corten en seco */
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%);
+          mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%);
+}
+.svc-tambor__linea{
+  position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(35,35,35,.2);
+}
+.svc-tambor__marca{
+  position:absolute;left:0;top:50%;width:22px;height:1px;
+  background:var(--ink);transform:translateY(-.5px);
+}
+.svc-tambor__eje{position:absolute;inset:0;transform-style:preserve-3d}
+.svc-cara{
+  position:absolute;left:0;right:0;top:50%;height:96px;margin-top:-48px;
+  display:flex;align-items:center;backface-visibility:hidden;
+}
+.svc-cara a{display:flex;align-items:baseline;gap:1.4vw;padding-left:2.2vw;width:100%}
+.svc-cara__n{font-variant-numeric:tabular-nums;opacity:.45}
+.svc-cara__nombre{
+  line-height:1;letter-spacing:-.045em;white-space:nowrap;color:var(--ink);
+}
+
+@media (max-width:900px){
+  .svc-rej{grid-template-columns:1fr;gap:4vh}
+  .svc-panel__titulo{font-size:9vw}
+  /* sin esto el navegador se queda con el arrastre vertical y el
+     touchmove nunca llega con opcion de cancelarlo */
+  .svc-tambor{height:50vh;min-height:320px;touch-action:none}
+  /* el indicador se va entero: dejar solo el guion de la izquierda
+     sin su linea quedaria como un resto colgando */
+  .svc-tambor__linea,.svc-tambor__marca{display:none}
+  .svc-cara__nombre{font-size:26px!important}
+}
+
+/* ============ PROCESO ============
+   Calcado de nuvik.digital: lista vertical, cada fila una grilla
+   60px / 274 / 365 con 30px de gap y una linea fina abajo.
+   ============================================================ */
+.proceso{
+  padding:12vh var(--gutter);background:var(--bg-alt);
+  display:grid;grid-template-columns:minmax(0,506fr) minmax(0,759fr);
+  column-gap:160px;align-items:start;
+}
+/* el titular se queda fijo mientras las etapas pasan al lado */
+.proceso__intro{position:sticky;top:150px}
+.proceso__title{
+  font-size:5vw;line-height:1.04;letter-spacing:-.035em;max-width:17ch;margin:5vh 0 0;
+}
+.proceso__lead{max-width:46ch;line-height:1.55;opacity:.75;margin-top:1.8em}
+.proceso__grid{max-width:760px}
+.paso{
+  display:grid;grid-template-columns:60px minmax(0,274fr) minmax(0,365fr);
+  gap:30px;align-items:start;
+  padding:2.3em 0;border-bottom:.8px solid rgba(35,35,35,.24);
+}
+.paso:first-child{border-top:.8px solid rgba(35,35,35,.24)}
+.paso__num{font-size:11px;opacity:.55;padding-top:.7em;letter-spacing:.04em}
+.paso__nombre{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.paso__texto{font-size:16px;line-height:1.55;opacity:.78}
+
+/* ============ FOOTER ============
+   Valores tomados uno a uno de nuvik.digital:
+   el social va absoluto dentro de .footer__main (relative), y el texto
+   del enlace se empuja con margin-left:auto para dejar la flecha al borde.
+   ============================================================ */
+.footer{
+  background:#181a1b;color:#f6f6f4;
+  padding:18px max(18px, -720px + 50vw) 34px;
+}
+.footer__main{position:relative}
+
+.footer__social{
+  display:grid;gap:10px;width:min(270px,25vw);
+  position:absolute;top:26px;left:10px;
+}
+.footer__social a{
+  color:#dfe0df;display:flex;align-items:center;gap:16px;
+  min-height:58px;font-size:20px;
+  transition:color .18s,transform .18s;
+}
+.footer__social a:hover{color:#fff;transform:translate(6px)}
+.footer__social svg{width:25px;height:25px;flex:0 0 auto}
+
+.footer__nav{padding:0 10px}
+.footer__nav a{
+  display:flex;justify-content:space-between;align-items:center;gap:30px;
+  min-height:82px;font-size:clamp(36px,4.8vw,70px);font-weight:400;
+  line-height:1;letter-spacing:-.055em;color:#f6f6f4;
+  transition:padding .22s,color .22s;
+}
+.footer__nav a > span{
+  text-align:right;margin-left:auto;margin-right:clamp(70px,9vw,140px);
+}
+.footer__nav a:first-child{border-top:0}
+.footer__nav a:hover{color:#c6c8c8;padding-left:12px;padding-right:12px}
+.footer__nav svg{
+  flex:0 0 auto;width:clamp(34px,4vw,58px);height:auto;
+  transition:transform .22s;
+}
+.footer__nav a:hover svg{transform:translate(8px)}
+
+.footer__bottom{
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:1em;
+  margin-top:6vh;padding:0 10px;
+  font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;
+}
+.footer__bottom a{border-bottom:1px solid currentColor;padding-bottom:.15em}
+
+@media (max-width:720px){
+  .footer{padding:10px 14px 105px}
+  .footer__social{
+    position:static;grid-template-columns:1fr 1fr;gap:8px;width:auto;
+    padding:8px 12px 28px;
+  }
+  .footer__social a{min-height:50px;font-size:17px}
+  .footer__nav{padding:0 12px}
+  .footer__nav a{min-height:70px;font-size:clamp(35px,10.5vw,54px)}
+  .footer__nav a > span{text-align:left;margin-left:0;margin-right:0}
+  .footer__nav svg{width:42px}
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  :root{--gutter:5vw;--fs-hero:12vw;--fs-display:13vw;--fs-service:11vw;--fs-h3:5.4vw}
+  .header{grid-template-columns:1fr auto}
+  .header__tagline{display:none}
+  .header__logo{font-size:4vw}
+  .main-hero__title{white-space:normal}
+  .main-values__text{font-size:7.4vw;max-width:none}
+  .main-values__sub{max-width:none}
+  .main-values__meta{display:none}
+  .main-brands{grid-template-columns:1fr;gap:5vh}
+  .main-brands__grid{grid-template-columns:repeat(2,1fr);gap:4vw}
+  .main-brands__cell strong{font-size:7vw}
+  .main-community__letters span{font-size:34vw}
+  .main-community__caption{max-width:62vw}
+
+  .svc{grid-template-columns:3.2em 1fr;gap:1em}
+  .svc__desc,.svc__more{grid-column:2}
+  .svc__more{justify-self:start}
+  .proceso{grid-template-columns:1fr;column-gap:0;row-gap:7vh}
+  .proceso__intro{position:static}
+  .proceso__title{font-size:9vw}
+  .paso{grid-template-columns:38px 1fr;gap:14px;padding:1.8em 0}
+  .paso__texto{grid-column:2}
+  .paso__nombre{font-size:21px}
+  .footer{grid-template-columns:1fr;row-gap:6vh}
+  .footer__bottom{flex-direction:column;gap:.5em}
+  .tag{font-size:3.4vw}
+}
+/* la referencia cambia el bloque de trabajo en 1025px, no en 900 */
+@media (max-width:1025px){
+  /* el apilado corre en todos los anchos: el JS no depende del tamano,
+     solo del progreso de scroll. La lista simple ya no hace falta. */
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation-duration:.01ms !important}}
+</style>
+</head>
+<body>
+<div class="cortina cortina--dentro"></div>
+<noscript><style>.cortina{display:none}</style></noscript>
+
+</div>
+
+<header class="header" id="header">
+  <a class="header__logo" href="#"><img src="logos/nuvik-symbol-white.png" alt="" width="36" height="36"><span>NUVIK</span></a>
+  <div class="header__tagline">
+    <p>Estudio digital</p>
+    <p>Santiago, Chile</p>
+  </div>
+  <nav class="header__nav">
+    <a class="link" href="trabajo/index.html"><span class="link__inner"><span>Trabajo</span><span>Trabajo</span></span></a>
+    <a class="link" href="#servicios"><span class="link__inner"><span>Servicios</span><span>Servicios</span></span></a>
+  </nav>
+</header>
+
+<div class="wrapper">
+<div class="page main-page" id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="main-hero">
+    <div class="main-hero__head">
+      <div>
+        <p><strong>Estudio digital</strong></p>
+        <p>Software, sitios y automatización</p>
+      </div>
+      <div class="main-hero__year"><span>20</span><span>26</span></div>
+    </div>
+
+    <h1 class="main-hero__title">
+      <span class="row"><span>Software</span></span>
+      <span class="row"><span>Hecho</span></span>
+      <span class="row"><span>A Medida</span></span>
+    </h1>
+    <div class="main-hero__body">
+      <div class="video__media">
+        <video id="reel" playsinline muted loop preload="auto"></video>
+        <script>
+        /* El origen se elige aca y no con <source media>, que los
+           navegadores no evaluan de forma fiable. Va junto al elemento
+           para que quede resuelto antes de que empiece a precargar. */
+        (function(){
+          var v = document.getElementById('reel');
+          if(!v) return;
+          v.src = matchMedia('(max-width:900px)').matches
+                ? 'video/nuvik-intro-9-16.mp4'   /* 1080x1920, para telefono */
+                : 'video/nuvik-intro.mp4';       /* 1920x1080 */
+        })();
+        </script>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VALORES ============ -->
+  <section class="main-values" id="estudio">
+    <div class="main-values__sticky">
+      <div class="main-values__content">
+        <h4 class="main-values__text" data-split>Construimos plataformas, sitios y automatizaciones alrededor de cómo trabaja tu equipo — no al revés. Escrito a mano, sin constructores visuales y sin temas comprados.</h4>
+        <p class="main-values__sub" data-sub>Estrategia, diseño y desarrollo en el mismo lugar: lo que se dibuja es lo que se entrega, y queda vivo después del lanzamiento.</p>
+      </div>
+      <div class="main-values__meta">
+        <span>Santiago</span><span>Software a medida</span><span>Automatización</span><span>Dashboards</span><span>Agentes de IA</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRABAJO ============ -->
+  <section class="works" id="casos">
+    <div class="works__head">
+      <div class="works__head-gradient"></div>
+      <h2 class="works__head-title"><span>LO</span><span>HECHO</span></h2>
+    </div>
+    <div class="works__body" id="worksBody">
+      <div class="works__items-scroller">
+        <div class="works__items" id="worksItems"><!-- inyectado --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICIOS ============ -->
+  <section class="main-services" id="servicios">
+    <div class="svc-cab">
+      <span>Servicios</span>
+      <span>Doce, en dos frentes</span>
+    </div>
+
+    <div class="svc-rej">
+      <div class="svc-panel">
+        <h2 class="svc-panel__titulo">Encuentra el servicio<br />que necesitas</h2>
+
+        <div class="svc-info" id="svcInfo">
+          <div class="svc-info__fila">
+            <span class="svc-info__punto" id="svcPunto"></span>
+            <span class="svc-info__frente" id="svcFrente"></span>
+            <span class="svc-info__num" id="svcNum"></span>
+          </div>
+          <p class="svc-info__desc" id="svcDesc"></p>
+          <a class="svc-info__ir" id="svcIr" href="#">Ver el servicio &#8594;</a>
+        </div>
+
+        <div class="svc-tabs">
+          <button class="svc-tab" id="svcTabA" type="button">
+            <span class="svc-tab__punto"></span>Automatizaci&oacute;n &amp; software
+          </button>
+          <button class="svc-tab" id="svcTabB" type="button">
+            <span class="svc-tab__punto"></span>Presencia digital
+          </button>
+        </div>
+      </div>
+
+      <div class="svc-tambor" id="svcTambor">
+        <span class="svc-tambor__linea"></span>
+        <span class="svc-tambor__marca"></span>
+        <div class="svc-tambor__eje" id="svcEje"><!-- inyectado --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROCESO ============ -->
+  <section class="proceso" id="proceso">
+    <div class="proceso__intro">
+      <div class="eyebrow"><span>Proceso</span><span>Siete etapas</span></div>
+      <h2 class="proceso__title" data-split-lines>Primero nos conocemos. Después construimos.</h2>
+      <p class="proceso__lead">Partimos con una conversación clara para entender tu negocio, ordenar prioridades y construir solo lo que realmente mueve el proyecto.</p>
+    </div>
+    <div class="proceso__grid" id="procesoGrid"><!-- inyectado --></div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+    <footer class="footer" id="contacto">
+      <div class="footer__main">
+        <div class="footer__social">
+          <a href="https://www.instagram.com/nuvikdigital/" target="_blank" rel="noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg><span>Instagram</span>
+          </a>
+          <a href="https://cl.linkedin.com/company/nuvikdigital" target="_blank" rel="noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg><span>LinkedIn</span>
+          </a>
+          <a href="mailto:contacto@nuvik.digital">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><span>contacto@nuvik.digital</span>
+          </a>
+        </div>
+        <nav class="footer__nav">
+        <a href="#top"><span>Inicio</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="trabajo/index.html"><span>Portafolio</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="#servicios"><span>Servicios</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="#" data-contacto><span>Contacto</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="legal/terminos.html"><span>Términos</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="legal/privacidad.html"><span>Privacidad</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </nav>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 Nuvik Digital</span>
+        <a href="legal/terminos.html">Términos y condiciones</a>
+      </div>
+    </footer>
+
+</div>
+</div>
+
+<script src="assets/intro.js?v=0039afd4" defer></script>
+<script>
+/* ============================================================
+   CONTENIDO
+   Fuente: lib/contenido.ts del sitio existente.
+   Acreditación: MachReach es producto propio.
+   ITO-e es CLIENTE y el rol fue solamente diseño UX/UI.
+   ============================================================ */
+const CASOS=[
+  {
+    id:"00", nombre:"Nuvik", anio:"2026",
+    rubro:"Estudio", rol:"Estudio digital",
+    titular:"Software hecho a medida.",
+    descripcion:"Estudio digital en Santiago.",
+    servicios:"Software, Automatizacion, Dashboards, IA",
+    tipo:"banner", marca:"nuvik", sello:"logos/nuvik-symbol-white.png",
+    href:"trabajo/index.html", cta:"Ver el portafolio"
+  },
+  {
+    id:"01", nombre:"Dar.io", anio:"2026",
+    rubro:"Producto propio · software",
+    rol:"Producto propio — todo el desarrollo",
+    titular:"Gestión integral de tu negocio en tiempo real.",
+    descripcion:"Dashboard y sistema de gestión para visualizar información clave, ordenar datos y tomar mejores decisiones.",
+    servicios:"Producto, UX/UI, Desarrollo, Dashboards",
+    sello:"logos/nuvik-symbol-white.png", nombreEnArte:true, slug:"dar-io", imagen:"casos/dar-io-showcase-2026-06-23.webp", vertical:"casos/dar-io-showcase-9-16.webp"
+  },
+  {
+    id:"02", nombre:"NexusChatBot", anio:"2026",
+    rubro:"Producto propio · chatbot",
+    rol:"Producto propio — todo el desarrollo",
+    titular:"Atiende, responde y captura oportunidades 24/7.",
+    descripcion:"Chatbot con inteligencia artificial para responder, guiar y automatizar conversaciones con clientes.",
+    servicios:"Producto, IA, Integraciones, Desarrollo",
+    sello:"logos/nuvik-symbol-white.png", nombreEnArte:true, slug:"nexuschatbot", imagen:"casos/nexus-chatbot-showcase-2026-06-23.webp", vertical:"casos/nexus-chatbot-showcase-9-16.webp"
+  },
+  {
+    id:"03", nombre:"MachReach", anio:"2026",
+    rubro:"Producto propio · plataforma",
+    rol:"Producto propio — todo el desarrollo",
+    titular:"Una plataforma de estudio que convierte el semestre en un juego.",
+    descripcion:"Extensión de navegador conectada a Canvas, material generado con IA, ligas semanales y suscripción mensual. Presente en UC, UDP, UAndes, UAI, USACH, USS y PUCV.",
+    servicios:"Estrategia, Marca, UX/UI, Desarrollo, IA, Facturación",
+    tipo:"banner", marca:"machreach", slug:"machreach", sello:"logos/machreach.svg",
+    nombreHTML:'Mach<i style="color:#ff6a2b">Reach</i>', enlace:"https://machreach.com"
+  },
+  {
+    id:"04", nombre:"ITO-e", anio:"2026",
+    rubro:"Cliente · web corporativa",
+    rol:"Cliente — sitio corporativo",
+    titular:"Una web que ordena la inspección técnica de obra.",
+    descripcion:"Sitio corporativo con narrativa editorial y una arquitectura orientada a solicitar demos.",
+    servicios:"UX/UI, Diseño web, Desarrollo del sitio",
+    tipo:"banner", marca:"itoe", slug:"ito-e", sello:"logos/ito-e-mark.png",
+    nombreHTML:'ITO<sup>e</sup>', enlace:"https://ito-e.cl",
+    nota:"Proyecto de cliente. El alcance fue el sitio corporativo; la plataforma de inspección es del equipo de ITO-e."
+  }
+];
+
+const PROCESO=[
+  ["01","Contacto inicial","Conversamos contigo para entender qué quieres construir, qué problema necesitas resolver y qué resultado esperas."],
+  ["02","Conocernos","Revisamos tu negocio, tus clientes y tus procesos actuales para detectar dónde hay fricción y oportunidades concretas."],
+  ["03","Ruta del proyecto","Ordenamos páginas, flujos, funcionalidades, integraciones y prioridades antes de empezar a diseñar o desarrollar."],
+  ["04","Diseño visual","Creamos una interfaz clara, profesional y alineada con la marca, pensada para guiar al usuario hacia la acción."],
+  ["05","Desarrollo","Construimos con código limpio, responsive, veloz y preparado para crecer sin depender de parches improvisados."],
+  ["06","Revisión","Probamos contigo cada parte del sistema, ajustamos detalles y validamos que funcione en casos reales."],
+  ["07","Lanzamiento y mejora","Publicamos, medimos y dejamos la base lista para seguir optimizando, automatizando y escalando."]
+];
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+const N=CASOS.length;
+/* nuvik ya no lleva capas: su fondo es la viñeta del video, a secas */
+const CAPAS={nuvik:[],
+             machreach:["b-glow"],            /* sin los aros concentricos */
+             itoe:[]};
+const arte=m=>(CAPAS[m]||[]).map(c=>`<span class="banner__art ${c}"></span>`).join('');
+
+const destino=c=>c.href||(c.slug?`trabajo/${c.slug}.html`:null);
+const enlace=c=>{const d=destino(c);return d?`<a class="works__enlace" href="${d}" aria-label="${esc(c.cta||('Ver '+c.nombre))}"></a>`:''};
+
+/* <picture> y no <video>-style media: aca el atributo media si lo
+   respetan todos los navegadores, y el cambio ocurre sin JS. */
+const medio=(c,i)=>{
+  if(c.tipo==='banner') return `<div class="banner banner--${c.marca}">${arte(c.marca)}</div>`;
+  const tarde = i>1 ? 'loading="lazy"' : '';
+  if(!c.vertical) return `<img src="${c.imagen}" alt="${esc(c.nombre)}" ${tarde}>`;
+  return `<picture>`
+       +   `<source media="(max-aspect-ratio:1/1)" srcset="${c.vertical}">`
+       +   `<img src="${c.imagen}" alt="${esc(c.nombre)}" ${tarde}>`
+       + `</picture>`;
+};
+
+/* sello + nombre en tipografia, centrado, como lockup de marca */
+const lockup=(c,i)=>`
+  <div class="lockup ${c.tipo==='banner'?'lockup--'+c.marca:'lockup--foto'}">
+    ${c.sello?`<img class="lockup__sello" src="${c.sello}" alt="" ${i>1?'loading="lazy"':''}>`:''}
+    ${c.nombreEnArte?'':`<span class="lockup__nombre">${c.nombreHTML||esc(c.nombre)}</span>`}
+  </div>`;
+
+document.getElementById('worksItems').innerHTML=CASOS.map((c,i)=>`
+  <article class="works__item" data-i="${i}" style="height:${i===0?'100vh':'0vh'}">
+    <div class="works__item-inner">
+      <div class="works__item-photo">${medio(c,i)}</div>
+      ${lockup(c,i)}
+      ${enlace(c)}
+    </div>
+  </article>`).join('');
+
+document.getElementById('worksBody').style.height=(N*100)+'vh';
+
+
+/* El rotulo de la cabecera se releva con el del hero: mientras el de
+   abajo esta a la vista, el de arriba no existe. Se usa el observador
+   y no el scroll para que valga tambien si la ventana cambia de alto. */
+(function(){
+  const rotulo = document.querySelector('.header__tagline');
+  const hero   = document.querySelector('.main-hero__head');
+  if(!rotulo || !hero) return;
+  if(!('IntersectionObserver' in window)){ rotulo.classList.add('se-ve'); return; }
+  new IntersectionObserver(function(es){
+    rotulo.classList.toggle('se-ve', !es[0].isIntersecting);
+  }, {threshold:0}).observe(hero);
+})();
+
+/* ============================================================
+   RENDER de servicios y proceso
+   ============================================================ */
+
+
+document.getElementById('procesoGrid').innerHTML=PROCESO.map(([n,t,d])=>`
+  <div class="paso">
+    <p class="paso__num">${esc(n)}</p>
+    <h3 class="paso__nombre">${esc(t)}</h3>
+    <p class="paso__texto">${esc(d)}</p>
+  </div>`).join('');
+
+/* Zona activa del tambor: solo la mitad izquierda, que es donde estan
+   los nombres. En la derecha la linea sigue dibujada pero la rueda es
+   de la pagina — capturarla en todo el ancho se sentia incomodo.
+   La usan tanto el tambor como el scroll suave, para que no puedan
+   discrepar: si una dice que no es suya, la otra tiene que tomarla. */
+/* 0.66 y no 0.5: medido, el nombre mas largo ("Automatizacion e
+   integraciones") se pasa 111px de la mitad, y dejar texto visible
+   donde la rueda ya no responde seria peor que el problema original.
+   Con 0.66 cabe con holgura y aun asi un tercio del tambor queda
+   libre para que la pagina scrollee normal. */
+var ZONA_TAMBOR = 0.66;
+function ruedaEnTambor(e){
+  var t = document.getElementById('svcTambor');
+  if(!t) return false;
+  var r = t.getBoundingClientRect();
+  if(e.clientY < r.top || e.clientY > r.bottom) return false;
+  /* en una columna el tambor ocupa todo el ancho y no hay nada al lado
+     que proteger: la media zona solo tiene sentido en escritorio */
+  var zona = matchMedia('(max-width:900px)').matches ? 1 : ZONA_TAMBOR;
+  return e.clientX >= r.left && e.clientX <= r.left + r.width * zona;
+}
+
+/* ============================================================
+   TAMBOR DE SERVICIOS
+   Portado del diseno "Nuvik Servicios". Doce caras repartidas en un
+   cilindro: cada una se gira rotateX(-i*30deg) y se empuja hacia
+   afuera translateZ(190px); el eje entero gira en sentido contrario,
+   asi que la cara que queda al frente es la activa.
+   ============================================================ */
+(function(){
+  const A = [
+    ['Software a medida','Sistemas internos, plataformas y herramientas construidas alrededor de cómo trabaja tu equipo — no al revés.','servicios/software-a-medida.html'],
+    ['Automatización e integraciones','Formularios, bases de datos, correo, CRM y WhatsApp conectados para que las tareas repetitivas dejen de existir.','servicios/automatizacion.html'],
+    ['Dashboards y datos','Información dispersa convertida en indicadores que sirven para decidir, no solo para mirar.','servicios/dashboards.html'],
+    ['Sitios y e-commerce','Sitios escritos a mano, rápidos y pensados para convertir. Sin constructores visuales, sin temas comprados.','servicios/e-commerce.html'],
+    ['Agentes de IA','Asistentes que responden, califican y derivan solos, con tus datos y bajo tus reglas.','servicios/agentes-ia.html'],
+    ['Apps internas','Construimos herramientas simples para equipos que necesitan operar más rápido sin depender de planillas eternas.','servicios/apps-internas.html'],
+  ];
+  const B = [
+    ['Web corporativa','Credibilidad digital desde el primer segundo.','servicios/web-corporativa.html'],
+    ['Landing pages','Una narrativa enfocada en una sola conversión.','servicios/landing-pages.html'],
+    ['E-commerce','Catálogo y compra pensados para vender más.','servicios/e-commerce.html'],
+    ['Rediseño web','Una experiencia actual, rápida y coherente.','servicios/rediseno-web.html'],
+    /* el diseno decia identidad-digital.html; el archivo real es marca-personal.html */
+    ['Identidad digital','Posicionamiento, narrativa y presencia web para comunicar experiencia con claridad.','servicios/marca-personal.html'],
+    ['SEO + mantenimiento','Rendimiento técnico y evolución continua.','servicios/seo-mantenimiento.html'],
+  ];
+
+  const ALTO_CARA = 96;
+  const items = A.map((x,i)=>({nombre:x[0],desc:x[1],href:x[2],g:0,n:'0'+(i+1)}))
+       .concat(B.map((x,i)=>({nombre:x[0],desc:x[1],href:x[2],g:1,n:'0'+(i+1)})));
+  const N = items.length, PASO = 360/N;
+  const RADIO = Math.max((ALTO_CARA/2)/Math.tan(Math.PI/N), 190);
+
+  const eje    = document.getElementById('svcEje');
+  const tambor = document.getElementById('svcTambor');
+  if(!eje || !tambor) return;
+
+  const info   = document.getElementById('svcInfo');
+  const punto  = document.getElementById('svcPunto');
+  const frente = document.getElementById('svcFrente');
+  const num    = document.getElementById('svcNum');
+  const desc   = document.getElementById('svcDesc');
+  const ir     = document.getElementById('svcIr');
+  const tabA   = document.getElementById('svcTabA');
+  const tabB   = document.getElementById('svcTabB');
+
+  eje.innerHTML = items.map(function(it,i){
+    return '<div class="svc-cara" data-i="'+i+'">'
+         +   '<a href="'+it.href+'">'
+         +     '<span class="svc-cara__n">'+it.n+'</span>'
+         +     '<span class="svc-cara__nombre">'+it.nombre+'</span>'
+         +   '</a>'
+         + '</div>';
+  }).join('');
+  const caras   = [].slice.call(eje.querySelectorAll('.svc-cara'));
+  const nombres = caras.map(function(c){ return c.querySelector('.svc-cara__nombre'); });
+
+  /* Dos angulos separados: 'rot' es lo que se ve y 'destino' a donde
+     va. La rueda solo mueve el destino y un bucle interpola hacia el.
+     Antes el angulo se asignaba de golpe y el suavizado lo hacia una
+     transicion CSS que se apagaba justo mientras girabas: con trackpad
+     los pasos son tan chicos que no se notaba, pero una rueda de raton
+     manda pocas muescas grandes y cada una se veia como un brinco. */
+  let rot = 0, destino = 0, sobre = false, moviendo = false;
+  let ultimoToque = 0, tSnap = null, tPosa = null, reloj = null;
+  let vivo = false, tPrev = null;
+
+  const norm = function(d){ let x=((d%360)+360)%360; return x>180 ? x-360 : x; };
+
+  /* Las ruedas no hablan el mismo idioma: unas reportan pixeles, otras
+     lineas y otras paginas. Sin normalizar, la misma muesca vale
+     numeros completamente distintos segun el raton. */
+  function deltaNorm(e){
+    let d = e.deltaY;
+    if(e.deltaMode === 1) d *= 16;              /* lineas */
+    else if(e.deltaMode === 2) d *= innerHeight; /* paginas */
+    /* techo por evento: una muesca no deberia saltarse varios servicios */
+    return Math.max(-140, Math.min(140, d));
+  }
+
+  function bucle(ahora){
+    if(tPrev === null) tPrev = ahora;
+    const dt = Math.min((ahora - tPrev)/1000, 0.05);
+    tPrev = ahora;
+
+    const falta = destino - rot;
+    if(Math.abs(falta) < 0.02){
+      rot = destino; vivo = false; tPrev = null;
+      pintar();
+      return;
+    }
+    /* elevado a dt*60 para que persiga igual a 60 que a 144 fps */
+    rot += falta * (1 - Math.pow(1 - 0.16, dt * 60));
+    pintar();
+    requestAnimationFrame(bucle);
+  }
+
+  function despertar(){
+    if(vivo) return;
+    vivo = true; tPrev = null;
+    requestAnimationFrame(bucle);
+  }
+
+  function pintar(){
+    const activa = ((Math.round(rot/PASO) % N) + N) % N;
+
+    /* sin transicion CSS en el eje: la interpolacion la hace el bucle */
+    eje.style.transition = 'none';
+    eje.style.transform  = 'translateZ(' + (-RADIO) + 'px) rotateX(' + rot + 'deg)';
+
+    for(let i=0;i<N;i++){
+      const d = norm(i*PASO - rot);
+      const visible = Math.abs(d) < 92;
+      const cerca = Math.max(0, Math.cos(d*Math.PI/180));
+      const on = (i === activa);
+      const c = caras[i], t = nombres[i];
+
+      c.style.transform  = 'rotateX(' + (-i*PASO) + 'deg) translateZ(' + RADIO + 'px)';
+      c.style.opacity    = visible ? (0.1 + 0.9*Math.pow(cerca,1.6)).toFixed(3) : '0';
+      c.style.pointerEvents = visible ? 'auto' : 'none';
+
+      t.style.fontSize   = (on ? 46 : 40) + 'px';
+      /* el segundo grupo va en contorno y solo se rellena al quedar al frente */
+      t.style.color            = (items[i].g === 0 || on) ? '' : 'transparent';
+      t.style.webkitTextStroke = (items[i].g === 1 && !on) ? '1px rgba(35,35,35,.55)' : '0';
+    }
+
+    const cur = items[activa] || items[0];
+    info.classList.toggle('svc-info--mueve', moviendo);
+    punto.classList.toggle('svc-info__punto--lleno', cur.g === 0);
+    frente.textContent = cur.g === 0 ? 'Automatización & software' : 'Presencia digital';
+    num.textContent    = cur.n + ' / 06';
+    desc.textContent   = cur.desc;
+    ir.setAttribute('href', cur.href);
+    tabA.classList.toggle('svc-tab--act', cur.g === 0);
+    tabB.classList.toggle('svc-tab--act', cur.g === 1);
+  }
+
+  function mover(hasta){
+    clearTimeout(tPosa);
+    destino = hasta; moviendo = true;
+    despertar();
+    tPosa = setTimeout(function(){ moviendo = false; pintar(); }, 700);
+  }
+
+  function saltarA(g){
+    ultimoToque = Date.now();
+    const objetivo = items.findIndex(function(it){ return it.g === g; });
+    if(objetivo < 0) return;
+    /* por el camino corto: si dar la vuelta larga, restar 360 */
+    let d = ((objetivo*PASO - rot) % 360 + 360) % 360;
+    if(d > 180) d -= 360;
+    mover(destino + d);
+  }
+
+  /* el cursor ns-resize solo donde la rueda de verdad gira el tambor */
+  tambor.addEventListener('pointermove', function(e){
+    tambor.style.cursor = ruedaEnTambor(e) ? 'ns-resize' : '';
+  }, {passive:true});
+  tambor.addEventListener('mouseenter', function(){ sobre = true; });
+  tambor.addEventListener('mouseleave', function(){ sobre = false; });
+
+  /* la rueda gira el tambor y despues cae al angulo mas cercano */
+  tambor.addEventListener('wheel', function(e){
+    /* con el panel de contacto abierto el tambor no toca la rueda */
+    if(document.documentElement.classList.contains('cto-abierto')) return;
+    /* fuera de la mitad activa no es asunto del tambor: se deja pasar
+       para que el suavizador mueva la pagina como en cualquier otro lado */
+    if(!ruedaEnTambor(e)) return;
+    /* preventDefault frena el scroll nativo, pero el suavizador de mas
+       abajo escucha en window y moveria la pagina igual. Como esta
+       escucha es interior, dispara antes: cortando la propagacion el
+       suavizador nunca ve la rueda que cae en la zona del tambor. */
+    e.preventDefault();
+    e.stopPropagation();
+    ultimoToque = Date.now();
+    clearTimeout(tSnap); clearTimeout(tPosa);
+    destino += deltaNorm(e) * 0.22;
+    moviendo = true; despertar();
+    /* 170ms y no 130: entre muesca y muesca de una rueda de raton pasa
+       mas tiempo que en un trackpad, y con el corte corto el encaje
+       saltaba en medio del gesto */
+    tSnap = setTimeout(function(){
+      mover(Math.round(destino/PASO) * PASO);
+    }, 170);
+  }, {passive:false});
+
+  /* Arrastre con el dedo. No habia ninguna escucha tactil, por eso en
+     el telefono el tambor no reaccionaba. Arrastrar hacia arriba gira
+     en el mismo sentido que rodar la rueda hacia abajo. */
+  var yTacto = null, arrastrando = false;
+
+  tambor.addEventListener('touchstart', function(e){
+    if(document.documentElement.classList.contains('cto-abierto')) return;
+    if(!ruedaEnTambor(e.touches[0])) return;
+    arrastrando = true;
+    yTacto = e.touches[0].clientY;
+    ultimoToque = Date.now();
+    clearTimeout(tSnap); clearTimeout(tPosa);
+  }, {passive:true});
+
+  tambor.addEventListener('touchmove', function(e){
+    if(!arrastrando) return;
+    e.preventDefault();            /* si no, la pagina se lleva el gesto */
+    var y = e.touches[0].clientY;
+    destino += (yTacto - y) * 0.3; /* ~100px de arrastre = un servicio */
+    yTacto = y;
+    ultimoToque = Date.now();
+    moviendo = true;
+    despertar();
+  }, {passive:false});
+
+  function soltar(){
+    if(!arrastrando) return;
+    arrastrando = false;
+    ultimoToque = Date.now();
+    mover(Math.round(destino / PASO) * PASO);
+  }
+  tambor.addEventListener('touchend', soltar, {passive:true});
+  tambor.addEventListener('touchcancel', soltar, {passive:true});
+
+  tabA.addEventListener('click', function(){ saltarA(0); });
+  tabB.addEventListener('click', function(){ saltarA(1); });
+
+  /* avanza solo, salvo que el puntero este encima o lo hayas tocado recien */
+  if(!matchMedia('(prefers-reduced-motion:reduce)').matches){
+    reloj = setInterval(function(){
+      if(sobre) return;
+      if(Date.now() - ultimoToque < 5200) return;
+      mover(rot + PASO);
+    }, 2800);
+  }
+
+  destino = rot;
+  pintar();
+})();
+
+/* ============================================================
+   Scroll suave equivalente a Lenis (la referencia usa
+   html.lenis-smooth). Interpola el scroll NATIVO, no un
+   translate del contenedor, para no romper position:sticky.
+   ============================================================ */
+(function(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  if(matchMedia('(hover:none)').matches) return;   /* en tactil el scroll ya es inercial */
+  var objetivo=scrollY, actual=scrollY, activo=false;
+  var tope=function(){return document.documentElement.scrollHeight-innerHeight};
+  addEventListener('wheel',function(e){
+    if(e.ctrlKey) return;
+    /* con el panel de contacto abierto la rueda es suya */
+    if(document.documentElement.classList.contains('cto-abierto')) return;
+    /* segunda linea de defensa, por si cambia el orden de escuchas.
+       Mismo criterio que el tambor: solo su mitad activa, no todo el
+       elemento — si no, la mitad derecha se quedaria sin scroll. */
+    if(typeof ruedaEnTambor === 'function' && ruedaEnTambor(e)) return;
+    e.preventDefault();
+    objetivo=Math.max(0,Math.min(tope(),objetivo+e.deltaY));
+    activo=true;
+  },{passive:false});
+  addEventListener('scroll',function(){ if(!activo){objetivo=actual=scrollY} },{passive:true});
+  addEventListener('resize',function(){ objetivo=actual=scrollY; activo=false });
+  (function bucle(){
+    if(activo){
+      actual+=(objetivo-actual)*0.1;            /* lerp por defecto de Lenis */
+      if(Math.abs(objetivo-actual)<0.4){actual=objetivo;activo=false}
+      scrollTo(0,actual);
+    }
+    requestAnimationFrame(bucle);
+  })();
+})();
+
+/* ============================================================
+   MOTION
+   ============================================================ */
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function pinProgress(el){
+  const r=el.getBoundingClientRect();
+  const total=r.height-innerHeight;
+  return total<=0?0:clamp(-r.top/total);
+}
+
+/* header */
+(function(){
+  const h=document.getElementById('header'); let last=0;
+  addEventListener('scroll',()=>{const y=scrollY;h.classList.toggle('is-hidden',y>last&&y>innerHeight*.6);last=y},{passive:true});
+})();
+
+/* splitting */
+document.querySelectorAll('[data-split]').forEach(el=>{
+  el.innerHTML=el.textContent.trim().split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
+});
+/* El envoltorio de cada palabra va en <span>, no en <i>: <i> es
+   italica por defecto, y como Inter Tight se carga solo con pesos (sin
+   eje italico) el navegador sintetizaba una oblicua. Por eso este
+   titular se veia inclinado y con otra letra que el resto. */
+document.querySelectorAll('[data-split-lines]').forEach(el=>{
+  el.innerHTML=el.textContent.trim().split(/\s+/).map(w=>`<span class="w"><span>${w}</span></span>`).join(' ');
+});
+
+/* fades */
+const fadeObs=new IntersectionObserver((es,o)=>{es.forEach(e=>{
+  if(!e.isIntersecting) return;
+  const cells=e.target.querySelectorAll('.main-brands__cell');
+  if(cells.length) cells.forEach((c,i)=>setTimeout(()=>c.classList.add('on'),i*90));
+  else e.target.classList.add('on');
+  o.unobserve(e.target);
+})},{threshold:.25});
+const bgrid=document.getElementById('brandGrid'); if(bgrid) fadeObs.observe(bgrid);
+document.querySelectorAll('[data-sub],[data-fade]').forEach(el=>fadeObs.observe(el));
+
+/* scroll loop */
+const valuesSec=document.querySelector('.main-values');
+const valueWords=document.querySelectorAll('.main-values__text .w');
+const commSec=document.querySelector('.main-community');
+const letters=document.getElementById('letters');
+const orb=document.getElementById('orb');
+const worksBody=document.getElementById('worksBody');
+const worksItems=[...document.querySelectorAll('.works__item')];
+let smooth=0;
+
+const heroVideo=document.querySelector('.video__media');
+const heroBody=document.querySelector('.main-hero__body');
+const titulos=[...document.querySelectorAll('[data-split-lines]')];
+const grupos=[
+  [...document.querySelectorAll('.paso')],
+  [...document.querySelectorAll('.footer__nav a')]
+].filter(g=>g.length);
+if(!reduce) document.body.classList.add('anim');
+
+/* Un solo lugar donde se calcula todo lo que depende del scroll. */
+function aplicar(){
+  smooth=lerp(smooth,scrollY,.1);
+
+  if(valuesSec){
+    const p=pinProgress(valuesSec), n=valueWords.length;
+    valueWords.forEach((w,i)=>w.classList.toggle('on',p*1.25>(i/n)));
+  }
+
+  if(worksBody && worksItems.length){
+    const p=pinProgress(worksBody), seg=p*(worksItems.length-1);
+    worksItems.forEach((it,i)=>{
+      if(i===0) return;                    /* el primero siempre completo detrás */
+      it.style.height=(clamp(seg-(i-1))*100)+'vh';
+    });
+  }
+
+
+  /* El video del hero se abre con el scroll: entra recortado y con las
+     esquinas redondeadas, y se va a sangre completa al bajar. */
+  if(heroVideo){
+    /* Se mide el scroll desde arriba, no la entrada en cuadro: el video ya
+       esta dentro del viewport al cargar, asi que "entrar" no sirve de
+       disparador. Aca arranca cerrado en el tope y se abre a sangre
+       completa cuando llevas ~0.6 de pantalla scrolleada. */
+    const p=clamp(scrollY/(innerHeight*0.6));
+    const suave=1-Math.pow(1-p,3);                 /* outCubic */
+    const lados=(1-suave)*19, arriba=(1-suave)*11;
+    heroVideo.style.opacity=Math.min(1,0.08+p*2.4).toFixed(3);
+    heroVideo.style.clipPath=
+      'inset('+arriba.toFixed(2)+'% '+lados.toFixed(2)+'% round '
+      +((1-suave)*26).toFixed(1)+'px)';
+
+    /* cerrado = pausado. Solo se actua en el cambio de estado, no en
+       cada cuadro, para no llamar play() sesenta veces por segundo. */
+    const vid=document.getElementById('reel');
+    if(vid){
+      const debeSonar = p > 0.1;
+      if(debeSonar && vid.paused) vid.play().catch(()=>{});
+      else if(!debeSonar && !vid.paused) vid.pause();
+    }
+  }
+
+  /* titulos: palabra por palabra segun avanza el scroll */
+  titulos.forEach(h=>{
+    const r=h.getBoundingClientRect();
+    if(r.bottom<0||r.top>innerHeight) return;
+    const ws=h.querySelectorAll('.w');
+    const p=clamp((innerHeight*.92-r.top)/(innerHeight*.52));
+    ws.forEach((w,i)=>w.classList.toggle('on', p>i/(ws.length+.5)));
+  });
+
+  /* grupos: los items entran uno tras otro, no de golpe */
+  grupos.forEach(g=>{
+    const cont=g[0].parentElement;
+    const r=cont.getBoundingClientRect();
+    if(r.bottom<0||r.top>innerHeight) return;
+    const p=clamp((innerHeight*.95-r.top)/(innerHeight*.60));
+    g.forEach((el,i)=>el.classList.toggle('vis', p>(i+.4)/(g.length+.6)));
+  });
+}
+
+/* Dos disparadores para la misma funcion: el rAF da la interpolacion
+   suave, y el evento de scroll garantiza que se actualice aunque el
+   rAF venga estrangulado (pestaña de fondo, paneles embebidos). */
+if(!reduce){
+  (function bucle(){ aplicar(); requestAnimationFrame(bucle); })();
+  addEventListener('scroll',aplicar,{passive:true});
+}
+aplicar();
+
+/* El video del hero NO arranca al cargar: mientras esta cerrado por la
+   animacion de scroll queda pausado. Lo enciende y lo apaga aplicar(),
+   segun cuanto este abierto. Asi no se decodifican 4.9MB de video para
+   algo que todavia no se ve. */
+
+/* El efecto de fluido (humo) se retiro del landing. El modulo sigue en
+   assets/fluido.js por si se quiere volver a montar. */
+
+</script>
+<script src="assets/transicion.js?v=604844cf"></script>
+<script src="assets/contacto.js?v=387f7056"></script>
+
+<!-- Copia estatica del formulario, solo para que Netlify lo registre.
+     Netlify detecta formularios escaneando el HTML al desplegar, y el
+     panel de contacto lo inyecta con JavaScript: sin esta copia el bot
+     no veria ninguno y las solicitudes se perderian. El usuario nunca
+     la ve; el envio real sale del panel. -->
+<form name="contacto" data-netlify="true" data-netlify-honeypot="website_hp" hidden>
+  <input type="text" name="name">
+  <input type="email" name="email">
+  <input type="text" name="company">
+  <textarea name="message"></textarea>
+  <input type="checkbox" name="consent_contact">
+  <input type="text" name="website_hp">
+</form>
+</body>
+</html>

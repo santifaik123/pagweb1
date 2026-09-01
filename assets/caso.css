@@ -1,0 +1,310 @@
+/* ============================================================
+   PAGINA DE CASO
+   Blanco, negro y etiquetas chicas. La imagen manda; el texto
+   entra en columnas angostas al costado.
+   ============================================================ */
+:root{
+  --ink:#232323; --bg:#ffffff; --bg-alt:#f1f1f1;
+  --gutter:2.5vw;
+  --ease:cubic-bezier(.32,0,.12,1);
+  --font:'Inter Tight','Helvetica Now Display','Neue Haas Grotesk Display',
+         'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+/* Barra de scroll oculta. Solo se esconde la barra: el scroll sigue
+   funcionando con rueda, teclado y gestos. */
+html{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar{width:0;height:0;display:none}
+body::-webkit-scrollbar{width:0;height:0;display:none}
+body{
+  font-family:var(--font);font-size:13px;line-height:1.5;
+  color:var(--ink);background:var(--bg);overflow-x:clip;
+}
+img,video{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-weight:400;letter-spacing:-.04em;line-height:1}
+
+/* ---------- cortina de transicion ---------- */
+.cortina{
+  position:fixed;inset:0;z-index:9999;background:var(--ink);
+  transform:translateY(100%);pointer-events:none;
+  transition:transform .56s var(--ease);
+}
+.cortina--dentro{transform:translateY(0);pointer-events:auto}
+.cortina--fuera{transform:translateY(-100%)}
+
+/* ---------- cabecera ---------- */
+.cab{
+  position:fixed;top:0;left:0;width:100%;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:var(--gutter);mix-blend-mode:difference;color:#fff;
+}
+.cab__logo{display:flex;align-items:center;gap:.55vw;font-weight:700;letter-spacing:-.04em}
+.cab__logo img{width:1.9vw;height:1.9vw;min-width:22px;min-height:22px;object-fit:contain}
+
+/* La esquina es la marca y el volver en una sola pieza: el simbolo mas
+   la palabra. Antes eran dos elementos y en varias paginas se leia
+   "Volver" dos veces. El deslizamiento vive en el envoltorio para que
+   la imagen no se mueva con el. */
+.cab__marca{
+  display:flex;align-items:center;gap:.55vw;
+  font-weight:700;letter-spacing:-.04em;
+}
+.cab__marca img{width:1.9vw;height:1.9vw;min-width:22px;min-height:22px;object-fit:contain}
+.cab__marca span.desliza{display:block;overflow:hidden;height:1.5em;line-height:1.5em}
+.cab__marca span.desliza span{
+  display:block;height:1.5em;line-height:1.5em;
+  transition:transform .45s var(--ease);
+}
+.cab__marca:hover span.desliza span{transform:translateY(-100%)}
+/* Deslizamiento de una linea. Cada palabra mide exactamente el alto de la
+   ventana y ambas suben -100% juntas: asi entra la segunda y sale la primera.
+   Con -50% cada span subia media linea y quedaban las dos a la vista. */
+.cab__volver{position:relative;display:block;overflow:hidden;height:1.5em;line-height:1.5em}
+.cab__volver span{
+  display:block;height:1.5em;line-height:1.5em;
+  transition:transform .45s var(--ease);
+}
+.cab__volver:hover span{transform:translateY(-100%)}
+
+/* ---------- portada ---------- */
+.portada{padding:22vh var(--gutter) 0}
+.portada__meta{
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:1em;
+  padding-bottom:1.4em;border-bottom:.8px solid rgba(35,35,35,.24);
+}
+.portada__meta span{opacity:.6}
+.portada__nombre{font-size:12vw;line-height:.9;margin:.28em 0 0;letter-spacing:-.05em}
+.portada__titular{
+  font-size:2.6vw;line-height:1.18;letter-spacing:-.03em;
+  max-width:26ch;margin:8vh 0 0;
+}
+
+/* ---------- imagen grande ---------- */
+.lienzo{margin:9vh 0;background:var(--bg-alt);overflow:hidden}
+.lienzo img{width:100%;height:auto}
+.lienzo--alto{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+.lienzo--alto img{width:100%;height:100%;object-fit:cover}
+.lienzo--marca{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+.lienzo--marca img{width:auto;height:auto;max-width:20vw;max-height:38%;object-fit:contain}
+
+/* ---------- cuerpo en dos columnas ---------- */
+.cuerpo{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);
+  gap:8vw;padding:0 var(--gutter);align-items:start;
+}
+.cuerpo__etq{position:sticky;top:22vh;opacity:.55}
+.cuerpo__texto p{font-size:1.35vw;line-height:1.55;max-width:34ch}
+.cuerpo__texto p + p{margin-top:1.2em}
+
+/* ---------- ficha de datos ---------- */
+.datos{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;
+  padding:10vh var(--gutter);
+}
+.datos div{border-top:.8px solid rgba(35,35,35,.24);padding-top:1em}
+.datos dt{opacity:.5;margin-bottom:.6em}
+.datos dd{font-size:1.1vw;letter-spacing:-.02em}
+
+/* ---------- puntos ---------- */
+.puntos{padding:0 var(--gutter) 10vh;max-width:1100px}
+.puntos li{
+  list-style:none;display:grid;grid-template-columns:40px 1fr;gap:20px;
+  padding:1.5em 0;border-bottom:.8px solid rgba(35,35,35,.2);
+  font-size:1.1vw;line-height:1.45;
+}
+.puntos li span{opacity:.45;font-size:11px;padding-top:.45em}
+
+/* ---------- nota de alcance ---------- */
+.nota{
+  margin:0 var(--gutter) 10vh;padding:1.6em 1.8em;background:var(--bg-alt);
+  max-width:56ch;line-height:1.55;opacity:.75;
+}
+
+/* ---------- siguiente caso ---------- */
+.siguiente{
+  display:block;padding:14vh var(--gutter);border-top:.8px solid rgba(35,35,35,.24);
+}
+.siguiente__etq{opacity:.5;margin-bottom:.6em;display:block}
+.siguiente__nombre{
+  font-size:9vw;letter-spacing:-.05em;line-height:1;
+  transition:opacity .4s var(--ease);
+}
+.siguiente:hover .siguiente__nombre{opacity:.45}
+
+/* ---------- paginas legales ---------- */
+.legal__titulo{font-size:7vw}
+.legal{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);
+  gap:7vw;padding:12vh var(--gutter);align-items:start;
+}
+.legal__indice{position:sticky;top:20vh;display:flex;flex-direction:column}
+.legal__indice-etq{opacity:.5;margin-bottom:1.4em}
+.legal__indice a{
+  display:flex;justify-content:space-between;align-items:baseline;gap:1em;
+  padding:.75em 0;border-bottom:.8px solid rgba(35,35,35,.16);
+  opacity:.75;transition:opacity .3s var(--ease);
+}
+.legal__indice a:hover{opacity:1}
+.legal__indice a span{line-height:1.3}
+.legal__intro{
+  font-size:1.5vw;line-height:1.5;letter-spacing:-.02em;
+  max-width:40ch;margin-bottom:7vh;
+}
+.legal__sec{
+  display:grid;grid-template-columns:60px 1fr;gap:30px;
+  padding:3em 0;border-top:.8px solid rgba(35,35,35,.2);
+}
+.legal__num{font-size:11px;opacity:.5;padding-top:.7em;letter-spacing:.04em}
+.legal__sec h2{font-size:1.9vw;font-weight:600;letter-spacing:-.02em;margin-bottom:.9em}
+.legal__sec p{font-size:15px;line-height:1.65;max-width:62ch;opacity:.82}
+.legal__sec p + p{margin-top:1em}
+
+/* ---------- indice de portafolio ----------
+   Grilla editorial asimetrica: los tiles no miden todos igual, que es
+   lo que evita que se lea como catalogo y le da ritmo a la pagina. */
+.pf__cab{padding:22vh var(--gutter) 0}
+.pf__titulo{font-size:11vw;line-height:.9;letter-spacing:-.05em;margin:.3em 0 0}
+.pf__bajada{font-size:1.5vw;line-height:1.5;max-width:34ch;margin:5vh 0 0;opacity:.75}
+.pf__conteo{
+  display:flex;justify-content:space-between;
+  padding-bottom:1.4em;border-bottom:.8px solid rgba(35,35,35,.24);
+}
+.pf__conteo span{opacity:.6}
+
+.portafolio{
+  display:grid;grid-template-columns:repeat(12,1fr);
+  gap:7vh 1.4vw;padding:11vh var(--gutter);
+}
+.pf{display:block;grid-column:span 6}
+.pf--ancho{grid-column:span 7}
+.pf--angosto{grid-column:span 5}
+
+.pf__medio{
+  position:relative;overflow:hidden;background:var(--bg-alt);
+  aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+}
+.pf__medio img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease)}
+.pf:hover .pf__medio img{transform:scale(1.04)}
+/* los que van con logo no se recortan: se centran sobre el panel */
+.pf__medio--marca{background:#fff}
+.pf__medio--marca img{width:auto;height:auto;max-width:34%;max-height:38%;object-fit:contain}
+.pf__medio--marca.pf__medio--claro{background:var(--bg-alt)}
+
+.pf__meta{display:flex;align-items:baseline;gap:1em;padding-top:1.1em}
+.pf__meta b{font-weight:400;font-size:1.6vw;letter-spacing:-.03em}
+.pf__meta span{opacity:.55}
+.pf__meta .pf__num{min-width:2.2em}
+.pf__linea{
+  display:block;height:.8px;background:rgba(35,35,35,.24);margin-top:1.1em;
+  transform:scaleX(0);transform-origin:left;transition:transform .55s var(--ease);
+}
+.pf:hover .pf__linea{transform:scaleX(1)}
+
+@media (max-width:1025px){
+  .pf__cab{padding:16vh var(--gutter) 0}
+  .pf__titulo{font-size:16vw}
+  .pf__bajada{font-size:4.6vw;max-width:none}
+  .portafolio{grid-template-columns:1fr;gap:5vh;padding:8vh var(--gutter)}
+  .pf,.pf--ancho,.pf--angosto{grid-column:span 1}
+  .pf__meta b{font-size:6vw}
+}
+
+/* ---------- footer (igual que el del home) ---------- */
+.footer{
+  background:#181a1b;color:#f6f6f4;
+  padding:7vh var(--gutter) 2.2vh;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.1fr);
+  column-gap:6vw;align-items:start;
+}
+.footer__social{display:flex;flex-direction:column;gap:1.5em}
+.footer__social a{display:flex;align-items:center;gap:.9em;font-size:15px;opacity:.85}
+.footer__social a:hover{opacity:1}
+.footer__social svg{width:20px;height:20px;flex:0 0 20px}
+.footer__nav{display:flex;flex-direction:column}
+.footer__nav a{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:clamp(30px,4.8vw,74px);font-weight:400;letter-spacing:-.055em;
+  line-height:1.18;color:#f6f6f4;transition:color .35s var(--ease);
+}
+.footer__nav a:hover{color:#8a8d8e}
+.footer__nav svg{width:clamp(22px,2.4vw,38px);height:auto;flex:0 0 auto;margin-left:1em}
+.footer__bottom{
+  grid-column:1/-1;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1em;
+  margin-top:8vh;font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;
+}
+.footer__bottom a{border-bottom:1px solid currentColor;padding-bottom:.15em}
+
+@media (max-width:1025px){
+  :root{--gutter:5vw}
+  .portada{padding:16vh var(--gutter) 0}
+  .portada__nombre{font-size:17vw}
+  .portada__titular{font-size:6vw;max-width:none}
+  .cuerpo{grid-template-columns:1fr;gap:2.5vh}
+  .cuerpo__etq{position:static}
+  .cuerpo__texto p{font-size:4.6vw;max-width:none}
+  .datos{grid-template-columns:1fr 1fr;gap:4vw}
+  .datos dd{font-size:4vw}
+  .puntos li{grid-template-columns:30px 1fr;gap:12px;font-size:4vw}
+  .lienzo--marca img{max-width:44vw}
+  .siguiente__nombre{font-size:15vw}
+  .footer{grid-template-columns:1fr;row-gap:6vh}
+  .legal{grid-template-columns:1fr;gap:5vh;padding:8vh var(--gutter)}
+  .legal__indice{position:static}
+  .legal__titulo{font-size:12vw}
+  .legal__intro{font-size:4.6vw;max-width:none}
+  .legal__sec{grid-template-columns:38px 1fr;gap:14px;padding:2.2em 0}
+  .legal__sec h2{font-size:6vw}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms !important;animation-duration:.01ms !important}
+}
+
+
+/* ============================================================
+   SUBPAGINAS DE SERVICIO
+   Mismo idioma que las paginas de caso: etiqueta chica, titular
+   grande y el contenido en columnas angostas. Las tarjetas son
+   rejilla fluida, sin alto fijo, para que el texto mande.
+   ============================================================ */
+.svc{padding:0 var(--gutter)}
+.svc__sec{
+  display:grid;grid-template-columns:minmax(0,22%) minmax(0,1fr);
+  gap:3vw;align-items:start;
+  padding:9vh 0;border-top:1px solid #e2e2e2;
+}
+.svc__etq{
+  font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:#8a8a8a;padding-top:.5em;position:sticky;top:11vh;
+}
+.svc__cuerpo{max-width:60ch}
+.svc__cuerpo h2{
+  font-size:clamp(26px,3.1vw,50px);letter-spacing:-.04em;line-height:1.04;
+  margin-bottom:.6em;
+}
+.svc__lead{font-size:clamp(15px,1.15vw,19px);line-height:1.6;color:#3d3d3d}
+
+.svc__tarjetas{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:1px;background:#e2e2e2;border:1px solid #e2e2e2;
+  margin-top:3.2vh;
+}
+.svc__tarjeta{background:var(--bg);padding:2.1vw 1.9vw}
+.svc__tarjeta h3{
+  font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:.55em;
+}
+.svc__tarjeta p{font-size:13.5px;line-height:1.55;color:#5c5c5c}
+
+/* etiquetas del encabezado */
+.svc__tags{display:flex;flex-wrap:wrap;gap:.5em;margin-top:2.4vh}
+.svc__tags span{
+  font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid #d2d2d2;border-radius:100px;padding:.5em 1em;color:#4a4a4a;
+}
+
+@media (max-width:900px){
+  .svc__sec{grid-template-columns:1fr;gap:1.6vh;padding:6vh 0}
+  .svc__etq{position:static}
+  .svc__tarjetas{grid-template-columns:1fr}
+}

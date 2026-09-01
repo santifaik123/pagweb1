@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trabajo — Nuvik Digital</title>
+<meta name="description" content="El trabajo de Nuvik Digital." />
+<link rel="icon" href="../logos/nuvik-symbol.webp" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   EL CUMULO
+   Las piezas no estan puestas a ojo: son las posiciones medidas
+   de la referencia, en porcentaje de un escenario de aspecto fijo.
+   Eso mantiene la composicion igual en cualquier pantalla.
+
+   La orbita se calcula en ese mismo espacio-porcentaje, no en
+   pixeles. Como el escenario es mas ancho que alto, un circulo en
+   porcentaje se dibuja como elipse en pantalla: el cumulo gira sin
+   que las piezas de los costados se escapen por arriba.
+   ============================================================ */
+:root{
+  --hueso:#e9eae4;
+  --ease:cubic-bezier(.32,0,.12,1);
+  --gutter:40px;
+  --font:'Inter Tight','Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+html{-webkit-font-smoothing:antialiased;scrollbar-width:none}
+html::-webkit-scrollbar{display:none}
+body{
+  background:#000;color:var(--hueso);
+  font-family:var(--font);
+  font-size:12px;font-weight:500;line-height:1.05;
+  text-transform:uppercase;
+}
+a{color:inherit;text-decoration:none}
+
+/* ---------- escenario ---------- */
+.campo{
+  position:fixed;top:50%;left:50%;z-index:2;
+  width:min(1290px,104vw,124vh);
+  aspect-ratio:1110/783;
+  transform:translate(-50%,-50%);
+}
+.pieza{
+  position:absolute;display:block;opacity:0;overflow:hidden;
+  will-change:transform,opacity;
+  transform-origin:50% 50%;
+  /* el arte de los banners se mide contra la pieza, no contra la
+     ventana: por eso mas abajo todo va en cqw y en %. Asi el mismo
+     banner del landing funciona a 90px igual que a pantalla completa. */
+  container-type:inline-size;
+}
+.pieza > img{
+  display:block;width:100%;height:100%;
+  object-fit:cover;
+  /* borde recto y duro, como la referencia: son laminas apiladas,
+     no manchas difuminadas. Nada de viñeta. */
+}
+
+/* ---- los banners del landing, reescalados a la pieza ---- */
+.ban{position:absolute;inset:0;overflow:hidden}
+.ban__art{position:absolute;inset:0;pointer-events:none}
+
+
+.ban--machreach{background:linear-gradient(180deg,#191033 0%,#2a1e4f 58%,#3a2a63 100%)}
+.ban--machreach .b-glow{
+  position:absolute;inset:auto;left:50%;bottom:-22%;width:150%;aspect-ratio:1;
+  transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(255,106,43,.44),rgba(217,75,20,.15) 40%,transparent 66%);
+}
+
+.ban--itoe{background:#ffffff}
+
+/* sello + nombre, mismo lockup del landing */
+.lock{
+  position:absolute;inset:0;z-index:5;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6cqw;pointer-events:none;text-align:center;
+}
+.lock__sello{width:auto;height:auto;max-width:34cqw;max-height:38%;object-fit:contain}
+.lock__nombre{
+  font-size:13cqw;line-height:1;letter-spacing:-.04em;font-weight:700;
+  color:#fff;text-transform:none;
+}
+.lock__nombre i{font-style:normal}
+.lock--itoe .lock__sello{max-width:44cqw;max-height:44%}
+.lock--itoe .lock__nombre{
+  color:#0b2f87;font-size:16cqw;font-weight:300;letter-spacing:.015em;line-height:.9;
+}
+.lock--itoe .lock__nombre sup{
+  font-size:.42em;vertical-align:super;letter-spacing:0;font-weight:300;
+}
+/* Sin velo: las piezas nunca se apagan. El aviso de que una esta
+   apuntada es que crece un poco y se adelanta — eso lo hace el bucle
+   en JS, porque la transform la reescribe cada cuadro. */
+.pieza--fija{pointer-events:none}    /* textura, no es un proyecto */
+
+/* ---------- la marca, al centro del hueco ---------- */
+.nucleo{
+  position:fixed;top:50%;left:50%;z-index:6;
+  transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  pointer-events:none;text-align:center;
+}
+.nucleo img{width:26px;height:26px;display:block;opacity:.92}
+.nucleo__nombre{
+  font-size:12px;letter-spacing:.06em;
+  height:1.05em;overflow:hidden;
+}
+.nucleo__nombre span{
+  display:block;transform:translateY(105%);
+  transition:transform .45s var(--ease);
+}
+.nucleo__nombre span.dentro{transform:none}
+
+/* ---------- cortina de transicion ----------
+   Identica a la de las paginas de caso y del landing. transicion.js
+   crea el elemento pero no trae estilo: sin estas reglas la cortina
+   existe y no se ve, que era justo lo que pasaba aca. */
+.cortina{
+  /* #232323 y no #000: es el --ink del landing y de caso.css. En el
+     instante del relevo las dos paginas tienen que pintar el mismo
+     color, si no se ve el salto de gris oscuro a negro puro. */
+  position:fixed;inset:0;z-index:9999;background:#232323;
+  transform:translateY(100%);pointer-events:none;
+  transition:transform .56s var(--ease);
+}
+.cortina--dentro{transform:translateY(0);pointer-events:auto}
+.cortina--fuera{transform:translateY(-100%)}
+
+/* barrido letra por letra.
+   flex-direction:column es obligatorio: cada letra lleva dos copias
+   (la que sale y la que entra) y en fila se dibujarian una al lado de
+   la otra — se leeria "NNUUVVIIKK". Apiladas, el overflow recorta. */
+.letras{
+  display:inline-flex;flex-direction:column;
+  overflow:hidden;height:1.05em;vertical-align:top;
+}
+.letras i{display:block;font-style:normal;transition:transform .5s var(--ease)}
+/* el barrido lo dispara el enlace entero, no cada letra: asi corre de
+   izquierda a derecha con el retraso de cada una */
+[data-letras]:hover .letras i{transform:translateY(-100%)}
+
+/* marca con el simbolo en la esquina */
+.marca{display:inline-flex;align-items:center;gap:9px}
+.marca img{width:21px;height:21px;display:block}
+
+/* ---------- filas fijas ---------- */
+.barra{
+  position:fixed;top:37px;left:var(--gutter);right:var(--gutter);z-index:10;
+  display:flex;justify-content:space-between;align-items:baseline;gap:24px;
+}
+.barra__nav{display:flex;gap:48px}
+/* Solo quedan el correo y las redes: una a cada esquina de abajo.
+   Con dos elementos, flex con space-between es mas simple que una
+   rejilla y no deja columnas vacias. */
+.pie{
+  position:fixed;left:var(--gutter);right:var(--gutter);bottom:34px;z-index:10;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+}
+.pie__mail{display:block}
+.pie--der{display:flex;flex-direction:column;gap:.55em;text-align:right}
+
+/* ---------- movil: sin puntero el cumulo no se lee, va en rejilla ---------- */
+@media (max-width:900px){
+  :root{--gutter:20px}
+  html,body{overflow:auto}
+  .barra{position:static;padding:22px var(--gutter) 0}
+  .barra__nav{gap:22px}
+  .nucleo{display:none}
+  .campo{
+    position:static;transform:none;width:auto;aspect-ratio:auto;
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    padding:8vh var(--gutter) 6vh;
+  }
+  .pieza{position:static!important;width:auto!important;transform:none!important;opacity:1!important}
+  .pieza{aspect-ratio:4/3!important}
+  .pieza > img{aspect-ratio:4/3}
+  .pieza::after{opacity:0}
+  .pie{position:static;flex-direction:column;align-items:flex-start;gap:2.4vh;padding:0 var(--gutter) 8vh}
+  .pie--der{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="cortina cortina--dentro"></div>
+<noscript><style>.cortina{display:none}</style></noscript>
+
+<header class="barra">
+  <a class="marca" href="../index.html">
+    <img src="../logos/nuvik-symbol-white.png" alt="" width="21" height="21">
+    <span data-letras>Volver</span>
+  </a>
+  <nav class="barra__nav">
+    <a data-letras href="../index.html#servicios">Servicios</a>
+    <a data-letras href="../index.html#proceso">Proceso</a>
+    <a data-letras href="#" data-contacto>Contacto</a>
+  </nav>
+</header>
+
+<div class="campo" id="campo"></div>
+
+<div class="nucleo">
+  <img src="../logos/nuvik-symbol-white.png" alt="Nuvik" width="26" height="26">
+  <span class="nucleo__nombre" id="nombre"><span></span></span>
+</div>
+
+<footer class="pie">
+  <a class="pie__mail" href="mailto:contacto@nuvik.digital">contacto@nuvik.digital</a>
+  <div class="pie--der">
+    <a data-letras href="https://www.instagram.com/nuvikdigital/" target="_blank" rel="noopener">Instagram</a>
+    <a data-letras href="https://cl.linkedin.com/company/nuvikdigital" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
+</footer>
+
+<script>
+/* Cuatro piezas, una por esquina de un cuadrado. Todas del mismo
+   tamano: con solo cuatro, una rejilla pareja lee mejor que el anillo
+   suelto que habia antes.
+   esq = esquina, en sentido horario desde arriba-izquierda. */
+var LADO  = 24.0;    /* ancho de cada pieza, en % del escenario */
+var RAZON = 1.5;     /* proporcion de la caja */
+var RADIO = 43.0;    /* media diagonal del cuadrado, en % del ALTO.
+                        No mas: en el extremo del vaiven una esquina
+                        apunta recto arriba y con 46 se salia de pantalla. */
+var PIEZAS = [
+  {esq:0, foto:'dar-io-showcase-2026-06-23',        pos:'50% 44%', dest:'dar-io'},
+  {esq:1, foto:'nexus-chatbot-showcase-2026-06-23', pos:'50% 44%', dest:'nexuschatbot'},
+  {esq:2, ban:'itoe',      sello:1, dest:'ito-e'},
+  {esq:3, ban:'machreach', sello:1, dest:'machreach'}
+];
+/* mismo lockup que el landing: sello + nombre en tipografia */
+var MARCAS = {
+  machreach: {sello:'../logos/machreach.svg',          nombre:'Mach<i style="color:#ff6a2b">Reach</i>', capas:['b-glow']},
+  itoe:      {sello:'../logos/ito-e-mark.png',         nombre:'ITO<sup>e</sup>',                capas:[]}
+};
+var NOMBRES = {
+  'dar-io':'Dar.io', 'nexuschatbot':'NexusChatBot',
+  'machreach':'MachReach', 'ito-e':'ITO-e'
+};
+
+var campo  = document.getElementById('campo');
+var nombre = document.getElementById('nombre').firstElementChild;
+
+/* ---------- montaje ---------- */
+var nodos = PIEZAS.map(function(p, i){
+  var el = document.createElement(p.dest ? 'a' : 'div');
+  el.className = 'pieza' + (p.dest ? '' : ' pieza--fija');
+  if (p.dest) el.href = p.dest + '.html';
+  el.style.width = LADO + '%';
+  el.style.aspectRatio = RAZON;
+  el.style.zIndex = String(10 + i);                       /* apilado estable */
+  if (p.foto){
+    el.innerHTML = '<img src="../casos/' + p.foto + '.webp" alt="" decoding="async"'
+                 + ' style="object-position:' + p.pos + '">';
+  } else {
+    var M = MARCAS[p.ban];
+    el.innerHTML =
+      '<div class="ban ban--' + p.ban + '">'
+      + M.capas.map(function(c){ return '<span class="ban__art ' + c + '"></span>'; }).join('')
+      + '</div>'
+      + (p.sello
+          ? '<div class="lock lock--' + p.ban + '">'
+            + '<img class="lock__sello" src="' + M.sello + '" alt="">'
+            + '<span class="lock__nombre">' + M.nombre + '</span></div>'
+          : '');
+  }
+
+  /* Las esquinas van a -135, -45, 45 y 135 grados. El angulo se guarda
+     y la posicion se calcula en el bucle compensando el aspecto: si no,
+     el cuadrado se aplastaria a rectangulo. */
+  var n = {
+    el: el,
+    ang: (-135 + p.esq * 90) * Math.PI / 180,
+    fase: i * 1.37,                          /* cada pieza respira distinto */
+    hondo: 0.8
+  };
+  n.retraso = i * 135;                      /* salen una tras otra */
+  n.sobre = 0;                              /* apuntada ahora */
+  n.realce = 0;                             /* lo mismo, suavizado */
+  el.addEventListener('mouseenter', function(){
+    n.sobre = 1;
+    if (p.dest) mostrar(NOMBRES[p.dest]);
+  });
+  el.addEventListener('mouseleave', function(){
+    n.sobre = 0;
+    if (p.dest) mostrar('');
+  });
+  campo.appendChild(el);
+  return n;
+});
+
+var nomActual = '';
+function mostrar(t){
+  if (t === nomActual) return;
+  nomActual = t;
+  nombre.classList.remove('dentro');
+  if (!t) return;
+  nombre.textContent = t;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ nombre.classList.add('dentro'); });
+  });
+}
+
+/* ---------- movimiento ----------
+   Con cuatro piezas en cuadrado ya no hay orbita: girar el cuadrado lo
+   convertiria en rombo la mitad del tiempo. Queda el flote, el arrastre
+   del puntero y el realce al apuntar. Se fue tambien el empujon con la
+   rueda, que solo tenia sentido para hacer girar el anillo. */
+var ASPECTO = 1110 / 783;        /* el escenario es mas ancho que alto */
+/* El cuadrado no se mueve solo: lo gira la rueda del raton. La pagina
+   no tiene scroll propio, asi que la rueda queda libre para esto.
+   No hace falta topar el giro: los extremos se repiten cada 90 grados
+   y el peor caso (45 grados, o sea rombo) ya cabe en pantalla. */
+var POR_RUEDA = 0.0016;          /* radianes por unidad de deltaY */
+var giroDestino = 0;             /* a donde va */
+var giro = 0;                    /* donde esta, persiguiendo al destino */
+
+addEventListener('wheel', function(e){
+  /* con el panel de contacto abierto la rueda es suya */
+  if(document.documentElement.classList.contains('cto-abierto')) return;
+  giroDestino += e.deltaY * POR_RUEDA;
+}, {passive:true});
+
+/* en tactil, el arrastre vertical hace lo mismo */
+var yPrev = null;
+addEventListener('touchstart', function(e){ yPrev = e.touches[0].clientY; }, {passive:true});
+addEventListener('touchmove', function(e){
+  var y = e.touches[0].clientY;
+  if (yPrev !== null) giroDestino += (yPrev - y) * POR_RUEDA;
+  yPrev = y;
+}, {passive:true});
+var raton = {x:0, y:0}, suave = {x:0, y:0};
+
+addEventListener('pointermove', function(e){
+  raton.x = (e.clientX / innerWidth  - 0.5) * 2;
+  raton.y = (e.clientY / innerHeight - 0.5) * 2;
+}, {passive:true});
+
+var anima = matchMedia('(min-width:901px)').matches
+         && !matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+var reloj = 0, tPrev = null;
+
+/* La media diagonal esta en % del ALTO. Para el eje horizontal se
+   divide por el aspecto: asi el desplazamiento en pixeles es el mismo
+   en los dos ejes y el cuadrado sale cuadrado y no rectangulo. */
+function sitio(ang, r){
+  return {
+    x: 50 + (Math.cos(ang) * r) / ASPECTO,
+    y: 50 +  Math.sin(ang) * r
+  };
+}
+
+function cuadro(ahora){
+  if (tPrev === null) tPrev = ahora;
+  /* si la pestana estuvo de fondo, dt viene enorme: lo topo para que
+     las piezas no peguen un salto al volver */
+  var dt = Math.min((ahora - tPrev) / 1000, 0.05);
+  tPrev = ahora;
+  reloj += dt;
+
+  suave.x += (raton.x - suave.x) * 0.045;      /* el puntero arrastra con inercia */
+  suave.y += (raton.y - suave.y) * 0.045;
+
+  /* el giro persigue a lo que pidio la rueda; sin rueda, no se mueve.
+     El factor va elevado a dt*60 para que frene igual a 60 que a 144 fps */
+  giro += (giroDestino - giro) * (1 - Math.pow(1 - 0.09, dt * 60));
+
+  /* la entrada parte cuando la cortina ya subio, medido con el reloj de
+     la animacion: si la pestana estuvo oculta nada avanzo, y al volver
+     el cuadrado se arma entero en vez de haberse perdido */
+  if (tRueda === null && reloj * 1000 >= ESPERA_CORTINA) tRueda = reloj * 1000;
+  var ms = (tRueda === null) ? -1 : (reloj * 1000 - tRueda);
+
+  for (var i = 0; i < nodos.length; i++){
+    var n = nodos[i];
+
+    /* cada pieza sale del centro y se abre hasta su esquina, llegando
+       girando. Va aca y no en CSS porque el bucle reescribe
+       left/top/transform cada cuadro y una transicion se perderia. */
+    var pe = (ms < 0) ? 0 : Math.min(1, Math.max(0, (ms - n.retraso) / 1150));
+    var e  = 1 - Math.pow(1 - pe, 4);          /* outQuart */
+
+    var pos = sitio(n.ang + giro - (1 - e) * 0.62, RADIO * e);
+    n.el.style.left = pos.x + '%';
+    n.el.style.top  = pos.y + '%';
+    n.el.style.opacity = Math.min(1, pe * 3).toFixed(3);
+
+    n.realce += (n.sobre - n.realce) * 0.16;   /* crece y se adelanta */
+    n.el.style.zIndex = String(10 + i + (n.sobre ? 40 : 0));
+
+    /* sin flote: era el otro movimiento que corria solo */
+    n.el.style.transform =
+      'translate(-50%,-50%) translate('
+      + (-suave.x * 18 * n.hondo * e).toFixed(2) + 'px,'
+      + (-suave.y * 14 * n.hondo * e).toFixed(2) + 'px)'
+      + ' scale(' + ((0.34 + 0.66 * e) * (1 + n.realce * 0.06)).toFixed(4) + ')';
+  }
+  requestAnimationFrame(cuadro);
+}
+
+function colocarQuietas(){
+  /* sin animacion las piezas igual tienen que quedar en su esquina */
+  for (var i = 0; i < nodos.length; i++){
+    var n = nodos[i], pos = sitio(n.ang, RADIO);
+    n.el.style.left = pos.x + '%';
+    n.el.style.top  = pos.y + '%';
+    n.el.style.transform = 'translate(-50%,-50%)';
+    n.el.style.opacity = '1';
+  }
+}
+
+/* ---------- entrada ----------
+   La cortina tarda 560ms en subir. La rueda arranca recien despues,
+   para que se vea armarse sobre la pagina ya destapada y no a medias
+   detras de la cortina. */
+var tRueda = null;
+var ESPERA_CORTINA = 620;
+
+function abrir(){
+  if (!anima){ colocarQuietas(); return; }
+  requestAnimationFrame(cuadro);
+  /* El arranque de la rueda lo decide el propio bucle (ver cuadro):
+     con setTimeout se mezclaban dos relojes distintos y si el temporizador
+     ganaba la carrera al primer cuadro, la rueda quedaba arrancada en el
+     instante cero y se perdia la animacion entera. */
+}
+
+/* letra por letra en la navegacion */
+[].forEach.call(document.querySelectorAll('[data-letras]'), function(a){
+  var txt = a.textContent.trim();
+  a.textContent = '';
+  txt.split('').forEach(function(ch, i){
+    var s = document.createElement('span');
+    s.className = 'letras';
+    var arriba = document.createElement('i'), abajo = document.createElement('i');
+    arriba.textContent = abajo.textContent = (ch === ' ' ? ' ' : ch);
+    arriba.style.transitionDelay = abajo.style.transitionDelay = (i * 0.022) + 's';
+    s.appendChild(arriba); s.appendChild(abajo);
+    a.appendChild(s);
+  });
+});
+
+/* La cortina es la unica espera, igual que en las paginas de caso:
+   cubre, se navega, y al levantarse el contenido ya viene entrando.
+   Un contador propio encima seria una segunda puerta — era eso lo que
+   cortaba la continuidad al entrar al portafolio. */
+(function(){
+  var lanzado = false;
+  function arrancar(){
+    if (lanzado) return;
+    lanzado = true;
+    abrir();
+  }
+  if (document.readyState === 'complete') arrancar();
+  else addEventListener('load', arrancar, {once:true});
+  setTimeout(arrancar, 2200);        /* si una imagen se cuelga, entrar igual */
+})();
+</script>
+<script src="../assets/transicion.js?v=604844cf"></script>
+<script src="../assets/contacto.js?v=387f7056"></script>
+</body>
+</html>

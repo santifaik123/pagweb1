@@ -1,0 +1,5 @@
+# nada que compilar: el sitio se sirve tal cual.
+# solo se ignora lo que ensucia al trabajar en Windows.
+Thumbs.db
+Desktop.ini
+.DS_Store

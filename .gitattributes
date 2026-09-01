@@ -1,0 +1,7 @@
+# Normaliza saltos de linea al confirmar: sin esto Windows mete CRLF y
+# cada commit aparece con el archivo entero cambiado.
+* text=auto eol=lf
+*.webp binary
+*.png  binary
+*.jpg  binary
+*.mp4  binary

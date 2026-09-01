@@ -1,0 +1,25 @@
+# Redirecciones para Netlify.
+#
+# El sitio anterior publicaba 22 URLs. Las 12 de servicio conservan su
+# ruta, pero el resto cambio de lugar o dejo de existir. Sin este archivo
+# esas direcciones darian 404: se romperian los enlaces que ya circulan
+# y el posicionamiento que tengan acumulado.
+#
+# 301 = permanente, que es lo que corresponde cuando el contenido se
+# mudo de sitio y no piensa volver.
+
+# ---- cambiaron de ruta ----
+/portafolio            /trabajo/                        301
+/dar.io                /trabajo/dar-io                  301
+/nexus                 /trabajo/nexuschatbot            301
+/terminos              /legal/terminos                  301
+/privacidad            /legal/privacidad                301
+
+# ---- paginas retiradas: van a lo mas cercano ----
+# el indice de servicios se reemplazo por el tambor del inicio
+/servicios             /#servicios                      301
+# automatizaciones se solapaba con su pagina de servicio
+/automatizaciones      /servicios/automatizacion        301
+# el estudio y contacto viven ahora en el inicio; contacto es un panel
+/nuvik-digital         /                                301
+/contacto              /                                301
