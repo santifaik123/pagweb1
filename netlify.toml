@@ -6,9 +6,12 @@
 # hay nada que compilar.
 
 [build]
-  # Sin compilacion: los archivos se publican tal cual, desde la raiz.
-  command = ""
+  # Un comando explicito que siempre termina bien, en vez de la cadena
+  # vacia: Netlify puede tomar "" como "usa lo configurado en el panel",
+  # que aqui todavia dice "npm run build" y sin package.json falla.
+  command = "echo 'sitio estatico: nada que compilar'"
   publish = "."
+
 
 # ---------------------------------------------------------------------
 # REDIRECCIONES
