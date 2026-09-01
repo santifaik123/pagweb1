@@ -1,26 +1,5 @@
-node_modules/
-dist/
-.npm-cache/
-.chrome-qa/
-.next/
-.vercel/
-.env
-.env.local
-*.tsbuildinfo
-next-env.d.ts
-.dev-server*.log
-.nuvik-dev*.log
-captures/
-
-# Legacy heavy prototype assets that are not referenced by the active NUVIK app.
-public/assets/aip.mp4
-public/assets/ontology.mov
-public/assets/hero-reel.mp4
-public/assets/gotham.mov
-public/assets/foundry.mp4
-public/assets/apollo.mp4
-public/assets/chain-reaction.png
-public/assets/aipcon.jpg
-public/assets/devcon.jpg
-public/assets/shipos.jpg
-public/assets/titan.png
+# nada que compilar: el sitio se sirve tal cual.
+# solo se ignora lo que ensucia al trabajar en Windows.
+Thumbs.db
+Desktop.ini
+.DS_Store
