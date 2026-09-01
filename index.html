@@ -4,6 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Nuvik Digital — Estudio digital en Santiago, Chile</title>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/icono-32.png" />
+<link rel="apple-touch-icon" href="/icono-180.png" />
 <meta name="description" content="Estudio digital en Santiago. Software a medida, automatización, dashboards, sitios y agentes de IA." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -454,7 +457,11 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 .footer__social a:hover{color:#fff;transform:translate(6px)}
 .footer__social svg{width:25px;height:25px;flex:0 0 auto}
 
-.footer__nav{padding:0 10px}
+/* Las filas se encogen al ancho de su contenido y se pegan a la derecha:
+   asi el area sensible es exactamente la palabra + la flecha, y no la
+   banda completa. De paso deja de pisarse con los enlaces sociales, que
+   van absolutos sobre la columna izquierda. */
+.footer__nav{padding:0 10px;display:flex;flex-direction:column;align-items:flex-end}
 .footer__nav a{
   display:flex;justify-content:space-between;align-items:center;gap:30px;
   min-height:82px;font-size:clamp(36px,4.8vw,70px);font-weight:400;
@@ -486,7 +493,9 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
     padding:8px 12px 28px;
   }
   .footer__social a{min-height:50px;font-size:17px}
-  .footer__nav{padding:0 12px}
+  /* En celular la palabra va a la izquierda y la flecha al borde, asi que
+     las filas vuelven a ocupar todo el ancho. */
+  .footer__nav{padding:0 12px;align-items:stretch}
   .footer__nav a{min-height:70px;font-size:clamp(35px,10.5vw,54px)}
   .footer__nav a > span{text-align:left;margin-left:0;margin-right:0}
   .footer__nav svg{width:42px}
