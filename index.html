@@ -36,7 +36,7 @@
   --fs-display: 9.24vw;
   --fs-service: 9.58vw;
   --fs-h3:      2.64vw;
-  --fs-body:    14.5px;   /* de aqui cuelgan nav, rotulos, bajadas y el panel del tambor */
+  --fs-body:    14.5px;   /* de aqui cuelgan nav, rotulos, bajadas y el panel de servicios */
 
   --lh-hero: .79;
   --ls-display: -.04em;
@@ -297,10 +297,10 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 }
 
 /* ============ SERVICIOS ============
-   Tambor 3D de doce caras. Las caras se reparten en un cilindro
-   (rotateX + translateZ) y el eje entero gira; el panel de la izquierda
-   sigue a la cara que quede al frente. Los numeros son los del diseno:
-   12 caras, 30 grados de paso, radio 190, cara de 96px. */
+   Baraja de cartas en perspectiva. Cada frente es un mazo de seis; la
+   de adelante cae, las demas suben una ranura y la caida vuelve al
+   fondo. El panel de la izquierda sigue a la carta que queda al frente.
+   ============================================================ */
 .main-services{
   position:relative;background:var(--bg-alt);color:var(--ink);
   padding:9vh var(--gutter);
@@ -325,7 +325,7 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
   display:flex;flex-direction:column;gap:14px;
   transition:opacity .5s cubic-bezier(.22,.61,.36,1);
 }
-.svc-info--mueve{opacity:.42}          /* se apaga mientras el tambor gira */
+.svc-info--mueve{opacity:.42}          /* se apaga mientras el mazo se mueve */
 .svc-info__fila{display:flex;align-items:center;gap:10px}
 .svc-info__punto{
   width:9px;height:9px;border:1px solid var(--ink);border-radius:50%;
@@ -370,42 +370,76 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 }
 .svc-tab--act .svc-tab__punto{background:var(--ink)}
 
-/* ---- el tambor ---- */
-.svc-tambor{
-  position:relative;height:56vh;min-height:380px;
+/* ---- la baraja ----
+   Reemplaza al tambor. Portado de "CardSwapShowcase" (React + GSAP) a
+   CSS y JS planos: el sitio no tiene build ni carga scripts de terceros,
+   asi que traer React + GSAP + Tailwind por una animacion no compensa.
+   La geometria es la del original: makeSlot(i) apila cada carta en
+   x:+i, y:-i, z:-i y la carta 0 es la que queda al frente. */
+.svc-baraja{
+  position:relative;height:58vh;min-height:470px;
   perspective:1400px;cursor:ns-resize;
-  /* se difumina arriba y abajo para que las caras no se corten en seco */
-  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%);
-          mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%);
+  /* La carta que cae se disuelve por abajo en vez de cortarse en seco.
+     'no-repeat' es lo que hace de recorte: sin el, mask-repeat vuelve a
+     tejer el degradado fuera de la caja y la carta caida reaparece mas
+     abajo, encima de la seccion siguiente.
+     La mascara va afuera y el preserve-3d adentro: al reves Safari
+     aplana las transformaciones. */
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 96%,transparent 100%);
+          mask-image:linear-gradient(180deg,#000 0%,#000 96%,transparent 100%);
+  -webkit-mask-repeat:no-repeat;  mask-repeat:no-repeat;
+  -webkit-mask-size:100% 100%;    mask-size:100% 100%;
 }
-.svc-tambor__linea{
-  position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(35,35,35,.2);
+.svc-baraja__mazo{position:absolute;inset:0;transform-style:preserve-3d}
+
+.svc-carta{
+  position:absolute;left:50%;top:50%;
+  width:clamp(268px,26vw,430px);height:clamp(190px,18.5vw,296px);
+  /* el mismo negro de las superficies oscuras del sitio (footer, intro) */
+  background:#181a1b;border:1px solid rgba(255,255,255,.10);border-radius:14px;
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.6);
+  transform-style:preserve-3d;will-change:transform;backface-visibility:hidden;
+  /* el color lo mueve CSS; la posicion la mueve el bucle de JS */
+  transition:border-color .3s var(--ease),box-shadow .3s var(--ease);
 }
-.svc-tambor__marca{
-  position:absolute;left:0;top:50%;width:22px;height:1px;
-  background:var(--ink);transform:translateY(-.5px);
+/* El sello, en blanco sobre el negro de la carta. Va algo mas arriba del
+   centro: los nombres de dos lineas suben hasta la mitad de la carta y
+   se montarian encima. */
+.svc-carta::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:url(logos/nuvik-symbol-white.png) center 38%/32% auto no-repeat;
+  opacity:.85;
 }
-.svc-tambor__eje{position:absolute;inset:0;transform-style:preserve-3d}
-.svc-cara{
-  position:absolute;left:0;right:0;top:50%;height:96px;margin-top:-48px;
-  display:flex;align-items:center;backface-visibility:hidden;
+.svc-carta--frente{
+  border-color:rgba(255,255,255,.24);
+  box-shadow:0 26px 54px -24px rgba(0,0,0,.66);
 }
-.svc-cara a{display:flex;align-items:baseline;gap:1.4vw;padding-left:2.2vw;width:100%}
-.svc-cara__n{font-variant-numeric:tabular-nums;opacity:.45}
-.svc-cara__nombre{
-  line-height:1;letter-spacing:-.045em;white-space:nowrap;color:var(--ink);
+.svc-carta a{
+  position:relative;z-index:1;      /* por encima del sello */
+  display:flex;flex-direction:column;height:100%;
+  padding:clamp(18px,1.5vw,26px);color:#f6f6f4;
 }
+.svc-carta__alto{display:flex;justify-content:space-between;align-items:baseline}
+.svc-carta__n{font-variant-numeric:tabular-nums;opacity:.5}
+.svc-carta__nombre{
+  margin-top:auto;font-size:clamp(21px,2.05vw,33px);
+  line-height:1.04;letter-spacing:-.035em;
+}
+.svc-carta__flecha{
+  margin-top:.7em;font-size:13px;opacity:0;transform:translateX(-6px);
+  transition:opacity .3s var(--ease),transform .3s var(--ease);
+}
+.svc-carta--frente .svc-carta__flecha{opacity:.62;transform:translateX(0)}
+.svc-carta--frente:hover .svc-carta__flecha{opacity:1;transform:translateX(4px)}
 
 @media (max-width:900px){
   .svc-rej{grid-template-columns:1fr;gap:4vh}
   .svc-panel__titulo{font-size:9vw}
   /* sin esto el navegador se queda con el arrastre vertical y el
      touchmove nunca llega con opcion de cancelarlo */
-  .svc-tambor{height:50vh;min-height:320px;touch-action:none}
-  /* el indicador se va entero: dejar solo el guion de la izquierda
-     sin su linea quedaria como un resto colgando */
-  .svc-tambor__linea,.svc-tambor__marca{display:none}
-  .svc-cara__nombre{font-size:26px!important}
+  /* sin esto el navegador se queda con el arrastre vertical y el
+     touchmove nunca llega con opcion de cancelarlo */
+  .svc-baraja{height:44vh;min-height:340px;touch-action:none}
 }
 
 /* ============ PROCESO ============
@@ -650,10 +684,10 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
         </div>
       </div>
 
-      <div class="svc-tambor" id="svcTambor">
-        <span class="svc-tambor__linea"></span>
-        <span class="svc-tambor__marca"></span>
-        <div class="svc-tambor__eje" id="svcEje"><!-- inyectado --></div>
+      <!-- el id se mantiene: ruedaEnTambor() lo busca por nombre y de esa
+           funcion depende tambien el suavizador de scroll de la pagina -->
+      <div class="svc-baraja" id="svcTambor">
+        <div class="svc-baraja__mazo" id="svcMazo"><!-- inyectado --></div>
       </div>
     </div>
   </section>
@@ -863,11 +897,20 @@ function ruedaEnTambor(e){
 }
 
 /* ============================================================
-   TAMBOR DE SERVICIOS
-   Portado del diseno "Nuvik Servicios". Doce caras repartidas en un
-   cilindro: cada una se gira rotateX(-i*30deg) y se empuja hacia
-   afuera translateZ(190px); el eje entero gira en sentido contrario,
-   asi que la cara que queda al frente es la activa.
+   BARAJA DE SERVICIOS
+   Puerto de "CardSwapShowcase" (React + GSAP) a JS plano. El sitio no
+   tiene build ni carga scripts de terceros, asi que en vez de sumar
+   React + GSAP se replica la geometria de las ranuras y el arco de la
+   carta que sale.
+
+   El original es DISCRETO: acumula, dispara una animacion de dos
+   segundos y hasta que no termina no acepta nada mas. Contra una rueda
+   de raton eso se siente muerto -- ruedas y no pasa nada, y cuando pasa
+   ya no puedes corregir. Aca la baraja es CONTINUA, igual que el tambor
+   que habia antes: una posicion fraccionaria persigue al scroll frame a
+   frame y encaja en la carta mas cercana al soltar. La caida deja de ser
+   una animacion aparte y pasa a ser un tramo mas del mismo recorrido,
+   asi que se puede arrastrar hacia adelante y hacia atras en medio.
    ============================================================ */
 (function(){
   const A = [
@@ -876,7 +919,7 @@ function ruedaEnTambor(e){
     ['Dashboards y datos','Información dispersa convertida en indicadores que sirven para decidir, no solo para mirar.','servicios/dashboards.html'],
     ['Sitios y e-commerce','Sitios escritos a mano, rápidos y pensados para convertir. Sin constructores visuales, sin temas comprados.','servicios/e-commerce.html'],
     ['Agentes de IA','Asistentes que responden, califican y derivan solos, con tus datos y bajo tus reglas.','servicios/agentes-ia.html'],
-    ['Apps internas','Construimos herramientas simples para equipos que necesitan operar más rápido sin depender de planillas eternas.','servicios/apps-internas.html'],
+    ['Apps internas','Construimos herramientas simples para equipos que necesitan operar más rápido sin depender de planillas eternas.','servicios/apps-internas.html']
   ];
   const B = [
     ['Web corporativa','Credibilidad digital desde el primer segundo.','servicios/web-corporativa.html'],
@@ -885,18 +928,16 @@ function ruedaEnTambor(e){
     ['Rediseño web','Una experiencia actual, rápida y coherente.','servicios/rediseno-web.html'],
     /* el diseno decia identidad-digital.html; el archivo real es marca-personal.html */
     ['Identidad digital','Posicionamiento, narrativa y presencia web para comunicar experiencia con claridad.','servicios/marca-personal.html'],
-    ['SEO + mantenimiento','Rendimiento técnico y evolución continua.','servicios/seo-mantenimiento.html'],
+    ['SEO + mantenimiento','Rendimiento técnico y evolución continua.','servicios/seo-mantenimiento.html']
+  ];
+  const FRENTES = [
+    {rotulo:'Automatización & software', datos:A},
+    {rotulo:'Presencia digital',        datos:B}
   ];
 
-  const ALTO_CARA = 96;
-  const items = A.map((x,i)=>({nombre:x[0],desc:x[1],href:x[2],g:0,n:'0'+(i+1)}))
-       .concat(B.map((x,i)=>({nombre:x[0],desc:x[1],href:x[2],g:1,n:'0'+(i+1)})));
-  const N = items.length, PASO = 360/N;
-  const RADIO = Math.max((ALTO_CARA/2)/Math.tan(Math.PI/N), 190);
-
-  const eje    = document.getElementById('svcEje');
-  const tambor = document.getElementById('svcTambor');
-  if(!eje || !tambor) return;
+  const baraja = document.getElementById('svcTambor');
+  const mazo   = document.getElementById('svcMazo');
+  if(!baraja || !mazo) return;
 
   const info   = document.getElementById('svcInfo');
   const punto  = document.getElementById('svcPunto');
@@ -907,53 +948,109 @@ function ruedaEnTambor(e){
   const tabA   = document.getElementById('svcTabA');
   const tabB   = document.getElementById('svcTabB');
 
-  eje.innerHTML = items.map(function(it,i){
-    return '<div class="svc-cara" data-i="'+i+'">'
-         +   '<a href="'+it.href+'">'
-         +     '<span class="svc-cara__n">'+it.n+'</span>'
-         +     '<span class="svc-cara__nombre">'+it.nombre+'</span>'
-         +   '</a>'
-         + '</div>';
-  }).join('');
-  const caras   = [].slice.call(eje.querySelectorAll('.svc-cara'));
-  const nombres = caras.map(function(c){ return c.querySelector('.svc-cara__nombre'); });
+  /* --- geometria: makeSlot() del componente --- */
+  let chico, SEP_X, SEP_Y, SESGO, CAIDA;
 
-  /* Dos angulos separados: 'rot' es lo que se ve y 'destino' a donde
-     va. La rueda solo mueve el destino y un bucle interpola hacia el.
-     Antes el angulo se asignaba de golpe y el suavizado lo hacia una
-     transicion CSS que se apagaba justo mientras girabas: con trackpad
-     los pasos son tan chicos que no se notaba, pero una rueda de raton
-     manda pocas muescas grandes y cada una se veia como un brinco. */
-  let rot = 0, destino = 0, sobre = false, moviendo = false;
-  let ultimoToque = 0, tSnap = null, tPosa = null, reloj = null;
-  let vivo = false, tPrev = null;
+  /* En el telefono el mazo se aprieta: con la separacion de escritorio
+     la carta de adelante se sale por la izquierda. Se vuelve a medir al
+     redimensionar -- si no, girar el telefono deja el espaciado viejo. */
+  function medir(){
+    chico = matchMedia('(max-width:900px)').matches;
+    SEP_X = chico ? 20  : 40;       /* cardDistance */
+    SEP_Y = chico ? 20  : 30;       /* verticalDistance */
+    SESGO = chico ? 2   : 4;        /* skewAmount */
+    CAIDA = chico ? 240 : 320;      /* hondura del arco de salida */
+  }
+  medir();
 
-  const norm = function(d){ let x=((d%360)+360)%360; return x>180 ? x-360 : x; };
-
-  /* Las ruedas no hablan el mismo idioma: unas reportan pixeles, otras
-     lineas y otras paginas. Sin normalizar, la misma muesca vale
-     numeros completamente distintos segun el raton. */
-  function deltaNorm(e){
-    let d = e.deltaY;
-    if(e.deltaMode === 1) d *= 16;              /* lineas */
-    else if(e.deltaMode === 2) d *= innerHeight; /* paginas */
-    /* techo por evento: una muesca no deberia saltarse varios servicios */
-    return Math.max(-140, Math.min(140, d));
+  /* El componente apila desde el centro hacia arriba-derecha, con lo que
+     el mazo entero queda descentrado y la ultima carta se sale de la
+     caja. Aca se corre medio recorrido al otro lado. */
+  function ranura(i, total){
+    return {
+      x: -(total - 1)*SEP_X/2 + i*SEP_X,
+      y:  (total - 1)*SEP_Y/2 - i*SEP_Y,
+      z: -i*SEP_X*1.5
+    };
   }
 
+  /* --- estado --- */
+  let grupo = 0, cartas = [], N = 0;
+  let pos = 0, destino = 0;          /* posicion vista y posicion buscada */
+  let vivo = false, tPrev = null;
+  let sobre = false, ultimoToque = 0, tEncaje = null, tPosa = null;
+  let moviendo = false;
+
+  const REDUCIDO = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* Coloca una carta segun su profundidad fraccionaria d, contada desde
+     el frente. d va de 0 (adelante) a N (que es otra vez adelante, una
+     vuelta despues).
+       d de 0 a N-1  -> las ranuras de siempre, interpoladas
+       d de N-1 a N  -> el tramo de salida: la carta que acaba de dejar
+                        el frente viaja al fondo describiendo un arco
+     Los dos tramos coinciden en sus extremos, asi que el recorrido no
+     tiene saltos y se puede arrastrar en cualquier direccion. */
+  function coloca(c, d){
+    let x, y, z;
+    if(d <= N - 1){
+      const r = ranura(d, N);
+      x = r.x; y = r.y; z = r.z;
+    } else {
+      /* tau va de 0 (acaba de dejar el frente) a 1 (llego al fondo), asi
+         que interpola directo de la ranura 0 a la ultima.
+         El arco es sin^2 y no sin: los dos valen 0 en los extremos, pero
+         sin llega con pendiente maxima, o sea que la carta entra y sale
+         del arco de un tiron justo en las ranuras. sin^2 llega con
+         pendiente cero y empalma sin quiebre; lo mas rapido pasa a estar
+         a media curva, que es donde se lee como impulso. */
+      const tau = N - d;
+      const a = ranura(0, N), b = ranura(N - 1, N);
+      const arco = Math.sin(Math.PI*tau);
+      x = a.x + (b.x - a.x)*tau;
+      y = a.y + (b.y - a.y)*tau + CAIDA*arco*arco;
+      z = a.z + (b.z - a.z)*tau;
+    }
+    c.el.style.transform =
+      'translate(-50%,-50%) translate3d(' + x.toFixed(2) + 'px,' +
+      y.toFixed(2) + 'px,' + z.toFixed(2) + 'px) skewY(' + SESGO + 'deg)';
+    /* el apilado sale de la profundidad real, asi la carta en transito
+       se mete detras sola sin necesidad de casos especiales */
+    c.el.style.zIndex = Math.round(1000 + z);
+  }
+
+  function pintar(){
+    const activa = ((Math.round(pos) % N) + N) % N;
+    for(let k = 0; k < N; k++){
+      const d = (((k - pos) % N) + N) % N;
+      coloca(cartas[k], d);
+      cartas[k].el.classList.toggle('svc-carta--frente', k === activa);
+    }
+    const cur = cartas[activa].datos;
+    info.classList.toggle('svc-info--mueve', moviendo);
+    punto.classList.toggle('svc-info__punto--lleno', grupo === 0);
+    frente.textContent = FRENTES[grupo].rotulo;
+    num.textContent    = cur.n + ' / 0' + N;
+    desc.textContent   = cur.desc;
+    ir.setAttribute('href', cur.href);
+    tabA.classList.toggle('svc-tab--act', grupo === 0);
+    tabB.classList.toggle('svc-tab--act', grupo === 1);
+  }
+
+  /* Persecucion exponencial, la misma del tambor: el paso se eleva a
+     dt*60 para que llegue igual a 60 que a 144 fps. */
   function bucle(ahora){
     if(tPrev === null) tPrev = ahora;
     const dt = Math.min((ahora - tPrev)/1000, 0.05);
     tPrev = ahora;
 
-    const falta = destino - rot;
-    if(Math.abs(falta) < 0.02){
-      rot = destino; vivo = false; tPrev = null;
+    const falta = destino - pos;
+    if(Math.abs(falta) < 0.0015){
+      pos = destino; vivo = false; tPrev = null;
       pintar();
       return;
     }
-    /* elevado a dt*60 para que persiga igual a 60 que a 144 fps */
-    rot += falta * (1 - Math.pow(1 - 0.16, dt * 60));
+    pos += falta * (1 - Math.pow(1 - 0.2, dt*60));
     pintar();
     requestAnimationFrame(bucle);
   }
@@ -964,109 +1061,109 @@ function ruedaEnTambor(e){
     requestAnimationFrame(bucle);
   }
 
-  function pintar(){
-    const activa = ((Math.round(rot/PASO) % N) + N) % N;
-
-    /* sin transicion CSS en el eje: la interpolacion la hace el bucle */
-    eje.style.transition = 'none';
-    eje.style.transform  = 'translateZ(' + (-RADIO) + 'px) rotateX(' + rot + 'deg)';
-
-    for(let i=0;i<N;i++){
-      const d = norm(i*PASO - rot);
-      const visible = Math.abs(d) < 92;
-      const cerca = Math.max(0, Math.cos(d*Math.PI/180));
-      const on = (i === activa);
-      const c = caras[i], t = nombres[i];
-
-      c.style.transform  = 'rotateX(' + (-i*PASO) + 'deg) translateZ(' + RADIO + 'px)';
-      c.style.opacity    = visible ? (0.1 + 0.9*Math.pow(cerca,1.6)).toFixed(3) : '0';
-      c.style.pointerEvents = visible ? 'auto' : 'none';
-
-      t.style.fontSize   = (on ? 46 : 40) + 'px';
-      /* el segundo grupo va en contorno y solo se rellena al quedar al frente */
-      t.style.color            = (items[i].g === 0 || on) ? '' : 'transparent';
-      t.style.webkitTextStroke = (items[i].g === 1 && !on) ? '1px rgba(35,35,35,.55)' : '0';
-    }
-
-    const cur = items[activa] || items[0];
-    info.classList.toggle('svc-info--mueve', moviendo);
-    punto.classList.toggle('svc-info__punto--lleno', cur.g === 0);
-    frente.textContent = cur.g === 0 ? 'Automatización & software' : 'Presencia digital';
-    num.textContent    = cur.n + ' / 06';
-    desc.textContent   = cur.desc;
-    ir.setAttribute('href', cur.href);
-    tabA.classList.toggle('svc-tab--act', cur.g === 0);
-    tabB.classList.toggle('svc-tab--act', cur.g === 1);
-  }
-
   function mover(hasta){
     clearTimeout(tPosa);
     destino = hasta; moviendo = true;
     despertar();
-    tPosa = setTimeout(function(){ moviendo = false; pintar(); }, 700);
+    tPosa = setTimeout(function(){ moviendo = false; pintar(); }, 600);
+  }
+
+  function encajar(){
+    mover(Math.round(destino));
+  }
+
+  /* --- construccion del mazo --- */
+  function montar(g, animado){
+    grupo = g;
+    const datos = FRENTES[g].datos;
+    N = datos.length;
+
+    mazo.innerHTML = datos.map(function(d, i){
+      return '<div class="svc-carta">'
+           +   '<a href="' + d[2] + '">'
+           +     '<span class="svc-carta__alto">'
+           +       '<span class="svc-carta__n">0' + (i + 1) + '</span>'
+           +     '</span>'
+           +     '<span class="svc-carta__nombre">' + d[0] + '</span>'
+           +     '<span class="svc-carta__flecha">Ver el servicio &#8594;</span>'
+           +   '</a>'
+           + '</div>';
+    }).join('');
+
+    cartas = [].slice.call(mazo.querySelectorAll('.svc-carta')).map(function(el, i){
+      return { el:el, datos:{ desc:datos[i][1], href:datos[i][2], n:'0' + (i + 1) } };
+    });
+
+    destino = 0;
+    /* el mazo nuevo entra deslizandose: se parte una carta atras y la
+       persecucion hace el resto */
+    pos = (animado && !REDUCIDO) ? -0.85 : 0;
+    pintar();
+    if(pos !== destino) despertar();
   }
 
   function saltarA(g){
     ultimoToque = Date.now();
-    const objetivo = items.findIndex(function(it){ return it.g === g; });
-    if(objetivo < 0) return;
-    /* por el camino corto: si dar la vuelta larga, restar 360 */
-    let d = ((objetivo*PASO - rot) % 360 + 360) % 360;
-    if(d > 180) d -= 360;
-    mover(destino + d);
+    if(g === grupo) return;
+    clearTimeout(tEncaje);
+    montar(g, true);
   }
 
-  /* el cursor ns-resize solo donde la rueda de verdad gira el tambor */
-  tambor.addEventListener('pointermove', function(e){
-    tambor.style.cursor = ruedaEnTambor(e) ? 'ns-resize' : '';
-  }, {passive:true});
-  tambor.addEventListener('mouseenter', function(){ sobre = true; });
-  tambor.addEventListener('mouseleave', function(){ sobre = false; });
+  /* --- rueda ---
+     Se conserva la logica del tambor: normalizar el delta, respetar la
+     media zona activa y cortar la propagacion para que el suavizador de
+     la pagina no mueva el scroll al mismo tiempo. */
+  function deltaNorm(e){
+    let d = e.deltaY;
+    if(e.deltaMode === 1) d *= 16;
+    else if(e.deltaMode === 2) d *= innerHeight;
+    return Math.max(-140, Math.min(140, d));
+  }
 
-  /* la rueda gira el tambor y despues cae al angulo mas cercano */
-  tambor.addEventListener('wheel', function(e){
-    /* con el panel de contacto abierto el tambor no toca la rueda */
+  /* una muesca corriente ronda 100-120: mueve algo mas de media carta,
+     asi que se ve reaccionar de inmediato sin pasarse de largo */
+  const SENS_RUEDA = 0.0055;
+  const SENS_DEDO  = 0.009;    /* ~110 px de arrastre = una carta */
+
+  baraja.addEventListener('pointermove', function(e){
+    baraja.style.cursor = ruedaEnTambor(e) ? 'ns-resize' : '';
+  }, {passive:true});
+  baraja.addEventListener('mouseenter', function(){ sobre = true; });
+  baraja.addEventListener('mouseleave', function(){ sobre = false; });
+
+  baraja.addEventListener('wheel', function(e){
     if(document.documentElement.classList.contains('cto-abierto')) return;
-    /* fuera de la mitad activa no es asunto del tambor: se deja pasar
-       para que el suavizador mueva la pagina como en cualquier otro lado */
     if(!ruedaEnTambor(e)) return;
-    /* preventDefault frena el scroll nativo, pero el suavizador de mas
-       abajo escucha en window y moveria la pagina igual. Como esta
-       escucha es interior, dispara antes: cortando la propagacion el
-       suavizador nunca ve la rueda que cae en la zona del tambor. */
     e.preventDefault();
     e.stopPropagation();
     ultimoToque = Date.now();
-    clearTimeout(tSnap); clearTimeout(tPosa);
-    destino += deltaNorm(e) * 0.22;
-    moviendo = true; despertar();
-    /* 170ms y no 130: entre muesca y muesca de una rueda de raton pasa
-       mas tiempo que en un trackpad, y con el corte corto el encaje
-       saltaba en medio del gesto */
-    tSnap = setTimeout(function(){
-      mover(Math.round(destino/PASO) * PASO);
-    }, 170);
+    clearTimeout(tEncaje); clearTimeout(tPosa);
+    destino += deltaNorm(e)*SENS_RUEDA;
+    moviendo = true;
+    despertar();
+    /* 170 ms y no menos: entre muesca y muesca de una rueda de raton
+       pasa mas tiempo que en un trackpad, y con el corte corto el
+       encaje saltaba en medio del gesto */
+    tEncaje = setTimeout(encajar, 170);
   }, {passive:false});
 
-  /* Arrastre con el dedo. No habia ninguna escucha tactil, por eso en
-     el telefono el tambor no reaccionaba. Arrastrar hacia arriba gira
-     en el mismo sentido que rodar la rueda hacia abajo. */
-  var yTacto = null, arrastrando = false;
+  /* --- dedo --- */
+  let yTacto = null, arrastrando = false;
 
-  tambor.addEventListener('touchstart', function(e){
+  baraja.addEventListener('touchstart', function(e){
     if(document.documentElement.classList.contains('cto-abierto')) return;
     if(!ruedaEnTambor(e.touches[0])) return;
     arrastrando = true;
     yTacto = e.touches[0].clientY;
     ultimoToque = Date.now();
-    clearTimeout(tSnap); clearTimeout(tPosa);
+    clearTimeout(tEncaje); clearTimeout(tPosa);
   }, {passive:true});
 
-  tambor.addEventListener('touchmove', function(e){
+  baraja.addEventListener('touchmove', function(e){
     if(!arrastrando) return;
     e.preventDefault();            /* si no, la pagina se lleva el gesto */
-    var y = e.touches[0].clientY;
-    destino += (yTacto - y) * 0.3; /* ~100px de arrastre = un servicio */
+    const y = e.touches[0].clientY;
+    destino += (yTacto - y)*SENS_DEDO;
     yTacto = y;
     ultimoToque = Date.now();
     moviendo = true;
@@ -1077,25 +1174,51 @@ function ruedaEnTambor(e){
     if(!arrastrando) return;
     arrastrando = false;
     ultimoToque = Date.now();
-    mover(Math.round(destino / PASO) * PASO);
+    encajar();
   }
-  tambor.addEventListener('touchend', soltar, {passive:true});
-  tambor.addEventListener('touchcancel', soltar, {passive:true});
+  baraja.addEventListener('touchend', soltar, {passive:true});
+  baraja.addEventListener('touchcancel', soltar, {passive:true});
 
   tabA.addEventListener('click', function(){ saltarA(0); });
   tabB.addEventListener('click', function(){ saltarA(1); });
 
-  /* avanza solo, salvo que el puntero este encima o lo hayas tocado recien */
-  if(!matchMedia('(prefers-reduced-motion:reduce)').matches){
-    reloj = setInterval(function(){
-      if(sobre) return;
-      if(Date.now() - ultimoToque < 5200) return;
-      mover(rot + PASO);
-    }, 2800);
+  /* --- cambio de tamano ---
+     Solo importa cruzar el punto de quiebre; las cartas se recolocan
+     con la posicion que ya tenian. */
+  let tRedim = null;
+  addEventListener('resize', function(){
+    clearTimeout(tRedim);
+    tRedim = setTimeout(function(){
+      const antes = chico;
+      medir();
+      if(chico !== antes) pintar();
+    }, 180);
+  }, {passive:true});
+
+  /* --- avance solo ---
+     Solo con la seccion a la vista y la pestana al frente. Sin este
+     freno el temporizador sigue barajando en segundo plano mientras
+     requestAnimationFrame esta congelado, y al volver el mazo salta de
+     golpe; ademas evita llegar a la seccion con el contador ya en 04/06. */
+  let enVista = false;
+  if(typeof IntersectionObserver === 'function'){
+    new IntersectionObserver(function(ent){
+      enVista = ent[0].isIntersecting;
+    }, {threshold:0.25}).observe(baraja);
+  } else {
+    enVista = true;
   }
 
-  destino = rot;
-  pintar();
+  if(!REDUCIDO){
+    setInterval(function(){
+      if(!enVista || document.hidden) return;
+      if(sobre) return;
+      if(Date.now() - ultimoToque < 5200) return;
+      mover(Math.round(pos) + 1);
+    }, 4000);
+  }
+
+  montar(0, false);
 })();
 
 /* ============================================================
