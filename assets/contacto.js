@@ -19,17 +19,45 @@
   /* ---------- estilo ---------- */
   var css = document.createElement('style');
   css.textContent = [
-    '.cto{position:fixed;inset:0;z-index:9998;display:none}',
+    /* Entrada escalonada. Abrir y cerrar son deliberadamente distintos:
+       al abrir mandan las capas y la hoja llega detras, con salida rapida
+       y asentamiento largo; al cerrar la hoja se va primero y las capas la
+       siguen en orden inverso, con arranque lento y salida seca. Hacerlos
+       simetricos es lo que mata el efecto.
+       La regla base es el estado cerrado -- y de paso define COMO se va;
+       la regla con .dentro es el estado abierto y como llega. Asi cada
+       sentido lleva su propia curva sin una sola linea de JS. */
+    '.cto{position:fixed;inset:0;z-index:9998;display:none;',
+    '  --sale:cubic-bezier(.16,1,.3,1);',      /* power4.out: parte rapido, asienta largo */
+    '  --entra:cubic-bezier(.7,0,.84,0);',     /* power3.in: arranca lento, sale seco */
+    '  --ancho:min(760px,94vw)}',
     '.cto.abierto{display:block}',
     '.cto__fondo{position:absolute;inset:0;background:rgba(10,10,10,.55);',
     '  border:0;padding:0;cursor:pointer;opacity:0;transition:opacity .4s cubic-bezier(.32,0,.12,1)}',
     '.cto.dentro .cto__fondo{opacity:1}',
-    /* hoja lateral: entra desde la derecha */
-    '.cto__hoja{position:absolute;top:0;right:0;height:100%;width:min(760px,94vw);',
+    /* capas: bandas de color que llegan por delante de la hoja */
+    '.cto__capas{position:absolute;top:0;right:0;bottom:0;width:var(--ancho);',
+    '  z-index:1;pointer-events:none}',
+    '.cto__capa{position:absolute;inset:0;transform:translateX(100%);',
+    '  transition:transform 350ms var(--entra) calc((var(--n) - var(--i)) * 50ms)}',
+    '.cto.dentro .cto__capa{transform:none;',
+    '  transition:transform 650ms var(--sale) calc(var(--i) * 70ms)}',
+    /* hoja lateral: entra desde la derecha, detras de las capas */
+    '.cto__hoja{position:absolute;top:0;right:0;height:100%;width:var(--ancho);z-index:2;',
     '  background:#161617;color:#f1f1f1;display:flex;flex-direction:column;',
-    '  transform:translateX(100%);transition:transform .55s cubic-bezier(.32,0,.12,1);',
+    '  transform:translateX(100%);transition:transform 350ms var(--entra) 0ms;',
     '  font-family:"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif}',
-    '.cto.dentro .cto__hoja{transform:none}',
+    '.cto.dentro .cto__hoja{transform:none;transition:transform 650ms var(--sale) 220ms}',
+    /* el contenido sube a su sitio detras de la hoja, uno tras otro */
+    '.cto__sube{transform:translateY(26px);opacity:0;',
+    '  transition:transform 300ms var(--entra) 0ms,opacity 220ms var(--entra) 0ms}',
+    '.cto.dentro .cto__sube{transform:none;opacity:1;',
+    '  transition:transform 900ms var(--sale) calc(320ms + var(--i) * 55ms),',
+    '             opacity 520ms var(--sale) calc(320ms + var(--i) * 55ms)}',
+    /* el titular ademas gira al entrar, recortado por su linea */
+    '.cto__linea{overflow:hidden}',
+    '.cto__linea .cto__sube{transform:translateY(140%) rotate(8deg)}',
+    '.cto.dentro .cto__linea .cto__sube{transform:none}',
     '.cto__cab{display:flex;align-items:center;justify-content:space-between;',
     '  padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.12);flex:0 0 auto}',
     '.cto__marca{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.03em}',
@@ -73,8 +101,14 @@
     '.cto__enviar:active{transform:translateY(0)}',
     '.cto__enviar svg{width:16px;height:16px}',
     '.cto__aviso{font-size:13px;line-height:1.5;color:rgba(241,241,241,.6);margin:1.4em 0 0}',
-    '@media (max-width:700px){.cto__hoja{width:100vw}.cto__cuerpo{padding:4vh 7% 8vh}}',
-    '@media (prefers-reduced-motion:reduce){.cto__hoja,.cto__fondo{transition-duration:.01ms}}'
+    /* se ensancha la variable y no la hoja: de --ancho cuelgan tambien
+       las capas, y si solo creciera la hoja se veria el desajuste
+       justo mientras barren */
+    '@media (max-width:700px){.cto{--ancho:100vw}.cto__cuerpo{padding:4vh 7% 8vh}}',
+    '@media (prefers-reduced-motion:reduce){',
+    '  .cto__hoja,.cto__fondo,.cto__capa,.cto__sube,.cto.dentro .cto__hoja,',
+    '  .cto.dentro .cto__capa,.cto.dentro .cto__sube{',
+    '    transition-duration:.01ms!important;transition-delay:0ms!important}}'
   ].join('\n');
   document.head.appendChild(css);
 
@@ -97,33 +131,46 @@
   cto.setAttribute('aria-label', 'Cotiza tu proyecto');
   cto.innerHTML =
       '<button class="cto__fondo" type="button" aria-label="Cerrar"></button>'
+      /* Dos bandas que barren por delante de la hoja. La clara primero:
+         contra el fondo oscuro del sitio es la que da el golpe de vista.
+         --n es cuantas son, y lo usa el calculo del retraso al cerrar. */
+    + '<div class="cto__capas" aria-hidden="true" style="--n:2">'
+    +   '<div class="cto__capa" style="--i:0;background:#f1f1f1"></div>'
+    +   '<div class="cto__capa" style="--i:1;background:#3a3a3c"></div>'
+    + '</div>'
     + '<section class="cto__hoja">'
     +   '<div class="cto__cab">'
     +     '<span class="cto__marca"><img src="' + pre + 'logos/nuvik-symbol-white.png" alt="">NUVIK</span>'
     +     '<button class="cto__x" type="button" aria-label="Cerrar">' + EQUIS + '</button>'
     +   '</div>'
     +   '<div class="cto__cuerpo">'
-    +     '<p class="cto__etq">Cotiza tu proyecto</p>'
-    +     '<h2 class="cto__titulo">Construyamos algo que mueva tu negocio.</h2>'
-    +     '<p class="cto__bajada">Cuéntanos qué necesitas, qué objetivo quieres alcanzar y '
+    +     '<p class="cto__etq cto__sube" style="--i:0">Cotiza tu proyecto</p>'
+    +     '<div class="cto__linea"><h2 class="cto__titulo cto__sube" style="--i:1">'
+    +       'Construyamos algo que mueva tu negocio.</h2></div>'
+    +     '<p class="cto__bajada cto__sube" style="--i:2">Cuéntanos qué necesitas, qué objetivo quieres alcanzar y '
     +       'qué está ocurriendo hoy. Revisaremos el contexto antes de proponerte un alcance.</p>'
     +     '<form class="cto__form" name="contacto" data-netlify="true" data-netlify-honeypot="website_hp" novalidate>'
     +       '<div class="cto__trampa" aria-hidden="true">'
     +         '<label>Sitio web<input type="text" name="website_hp" tabindex="-1" autocomplete="off"></label>'
     +       '</div>'
-    +       '<div class="cto__campo"><label for="cto-n">Nombre</label>'
+    +       '<div class="cto__campo cto__sube" style="--i:3"><label for="cto-n">Nombre</label>'
     +         '<input id="cto-n" name="name" type="text" placeholder="Tu nombre" required></div>'
-    +       '<div class="cto__campo"><label for="cto-e">Email</label>'
+    +       '<div class="cto__campo cto__sube" style="--i:4"><label for="cto-e">Email</label>'
     +         '<input id="cto-e" name="email" type="email" placeholder="tu@email.com" required></div>'
-    +       '<div class="cto__campo"><label for="cto-c">Empresa</label>'
+    +       '<div class="cto__campo cto__sube" style="--i:5"><label for="cto-c">Empresa</label>'
     +         '<input id="cto-c" name="company" type="text" placeholder="Nombre de tu empresa"></div>'
-    +       '<div class="cto__campo"><label for="cto-m">¿Qué necesitas construir?</label>'
+    +       '<div class="cto__campo cto__sube" style="--i:6"><label for="cto-m">¿Qué necesitas construir?</label>'
     +         '<textarea id="cto-m" name="message" rows="3" '
     +         'placeholder="Cuéntanos sobre el proyecto, objetivo y plazo" required></textarea></div>'
-    +       '<label class="cto__ok"><input type="checkbox" name="consent_contact" required>'
+    +       '<label class="cto__ok cto__sube" style="--i:7"><input type="checkbox" name="consent_contact" required>'
     +         '<span>Acepto que NUVIK use estos datos únicamente para responder esta solicitud. '
     +         '<a href="' + pre + 'legal/privacidad.html">Ver privacidad</a>.</span></label>'
-    +       '<button class="cto__enviar" type="submit">Enviar solicitud' + FLECHA + '</button>'
+      /* el escalonado va en un envoltorio y no en el boton: .cto__enviar
+         ya define su propia transition para el hover, y al empatar en
+         especificidad una de las dos se pierde */
+    +       '<div class="cto__sube" style="--i:8">'
+    +         '<button class="cto__enviar" type="submit">Enviar solicitud' + FLECHA + '</button>'
+    +       '</div>'
     +       '<p class="cto__aviso" hidden></p>'
     +     '</form>'
     +   '</div>'
@@ -131,6 +178,10 @@
   document.body.appendChild(cto);
 
   var hoja  = cto.querySelector('.cto__hoja');
+  /* Mientras no este abierta, la hoja queda inerte: no recibe foco ni la
+     lee un lector de pantalla. display:none ya la saca del arbol estando
+     cerrada, pero durante los ~450 ms del cierre sigue en pantalla. */
+  hoja.inert = true;
   var form  = cto.querySelector('.cto__form');
   var aviso = cto.querySelector('.cto__aviso');
   var devolverFoco = null;
@@ -152,16 +203,22 @@
        corriera: en una pestana estrangulada la hoja se quedaba fuera
        de pantalla, abierta pero invisible. */
     void hoja.offsetHeight;
+    hoja.inert = false;
     cto.classList.add('dentro');
     var primero = cto.querySelector('#cto-n');
     if (primero) primero.focus({ preventScroll: true });
   }
 
+  /* El cierre mas largo es el de la capa del fondo: 100 ms de espera mas
+     350 ms de recorrido. Se deja margen para no cortar la salida. */
+  var MS_CIERRE = 520;
+
   function cerrar() {
+    hoja.inert = true;
     cto.classList.remove('dentro');
     document.documentElement.classList.remove('cto-abierto');
     document.documentElement.style.overflow = '';
-    setTimeout(function () { cto.classList.remove('abierto'); }, 560);
+    setTimeout(function () { cto.classList.remove('abierto'); }, MS_CIERRE);
     if (devolverFoco && devolverFoco.focus) devolverFoco.focus();
   }
 
