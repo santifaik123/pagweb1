@@ -390,7 +390,12 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
   -webkit-mask-repeat:no-repeat;  mask-repeat:no-repeat;
   -webkit-mask-size:100% 100%;    mask-size:100% 100%;
 }
-.svc-baraja__mazo{position:absolute;inset:0;transform-style:preserve-3d}
+/* El mazo mide exactamente la pila, no todo el contenedor: su caja es
+   la zona sensible a la rueda, y el tamano se lo pone el JS cuando ya
+   sabe cuanto ocupa una carta. Las transformaciones de las cartas no
+   afectan a esta caja, asi que no se mueve mientras animan. */
+.svc-baraja__mazo{position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);transform-style:preserve-3d}
 
 .svc-carta{
   position:absolute;left:50%;top:50%;
@@ -874,26 +879,21 @@ document.getElementById('procesoGrid').innerHTML=PROCESO.map(([n,t,d])=>`
     <p class="paso__texto">${esc(d)}</p>
   </div>`).join('');
 
-/* Zona activa del tambor: solo la mitad izquierda, que es donde estan
-   los nombres. En la derecha la linea sigue dibujada pero la rueda es
-   de la pagina — capturarla en todo el ancho se sentia incomodo.
-   La usan tanto el tambor como el scroll suave, para que no puedan
+/* Zona activa de la baraja: la caja del mazo y nada mas.
+   Antes era el 66% izquierdo del contenedor, que era la forma del
+   tambor de caras. Con las cartas no calzaba: a 1440px el contenedor
+   iba de 526 a 1404 pero las cartas de 678 a 1201, o sea habia 152px
+   muertos a la izquierda que capturaban la rueda y un trozo de carta a
+   la derecha que no respondia. Atarla al mazo hace que la zona sea
+   siempre lo que se ve.
+   La usan tanto la baraja como el scroll suave, para que no puedan
    discrepar: si una dice que no es suya, la otra tiene que tomarla. */
-/* 0.66 y no 0.5: medido, el nombre mas largo ("Automatizacion e
-   integraciones") se pasa 111px de la mitad, y dejar texto visible
-   donde la rueda ya no responde seria peor que el problema original.
-   Con 0.66 cabe con holgura y aun asi un tercio del tambor queda
-   libre para que la pagina scrollee normal. */
-var ZONA_TAMBOR = 0.66;
 function ruedaEnTambor(e){
-  var t = document.getElementById('svcTambor');
-  if(!t) return false;
-  var r = t.getBoundingClientRect();
-  if(e.clientY < r.top || e.clientY > r.bottom) return false;
-  /* en una columna el tambor ocupa todo el ancho y no hay nada al lado
-     que proteger: la media zona solo tiene sentido en escritorio */
-  var zona = matchMedia('(max-width:900px)').matches ? 1 : ZONA_TAMBOR;
-  return e.clientX >= r.left && e.clientX <= r.left + r.width * zona;
+  var m = document.getElementById('svcMazo');
+  if(!m) return false;
+  var r = m.getBoundingClientRect();
+  return e.clientX >= r.left && e.clientX <= r.right
+      && e.clientY >= r.top  && e.clientY <= r.bottom;
 }
 
 /* ============================================================
@@ -972,6 +972,22 @@ function ruedaEnTambor(e){
       y:  (total - 1)*SEP_Y/2 - i*SEP_Y,
       z: -i*SEP_X*1.5
     };
+  }
+
+  /* El mazo se ajusta a lo que ocupa la pila: el ancho de una carta mas
+     el corrimiento acumulado. offsetWidth/offsetHeight son la medida sin
+     transformar, que es justo lo que hace falta -- las cartas se mueven
+     con transform y eso no toca la caja. Esa caja es la que decide si la
+     rueda es de la baraja o de la pagina. */
+  function dimensionarMazo(){
+    const c = cartas[0] && cartas[0].el;
+    if(!c) return;
+    /* el sesgo inclina la carta y le estira el rectangulo en vertical:
+       ancho * tan(sesgo), mitad arriba y mitad abajo. Sin sumarlo, el
+       pie de la carta de adelante queda fuera de la zona sensible. */
+    const sesgo = c.offsetWidth * Math.tan(SESGO*Math.PI/180);
+    mazo.style.width  = (c.offsetWidth  + SEP_X*(N - 1)) + 'px';
+    mazo.style.height = (c.offsetHeight + SEP_Y*(N - 1) + sesgo) + 'px';
   }
 
   /* --- estado --- */
@@ -1094,6 +1110,8 @@ function ruedaEnTambor(e){
       return { el:el, datos:{ desc:datos[i][1], href:datos[i][2], n:'0' + (i + 1) } };
     });
 
+    dimensionarMazo();
+
     destino = 0;
     /* el mazo nuevo entra deslizandose: se parte una carta atras y la
        persecucion hace el resto */
@@ -1111,8 +1129,8 @@ function ruedaEnTambor(e){
 
   /* --- rueda ---
      Se conserva la logica del tambor: normalizar el delta, respetar la
-     media zona activa y cortar la propagacion para que el suavizador de
-     la pagina no mueva el scroll al mismo tiempo. */
+     zona activa y cortar la propagacion para que el suavizador de la
+     pagina no mueva el scroll al mismo tiempo. */
   function deltaNorm(e){
     let d = e.deltaY;
     if(e.deltaMode === 1) d *= 16;
@@ -1191,6 +1209,9 @@ function ruedaEnTambor(e){
     tRedim = setTimeout(function(){
       const antes = chico;
       medir();
+      /* el ancho de la carta es un clamp() en vw, o sea que cambia con
+         cualquier redimension, no solo al cruzar el punto de quiebre */
+      dimensionarMazo();
       if(chico !== antes) pintar();
     }, 180);
   }, {passive:true});
@@ -1236,8 +1257,8 @@ function ruedaEnTambor(e){
     /* con el panel de contacto abierto la rueda es suya */
     if(document.documentElement.classList.contains('cto-abierto')) return;
     /* segunda linea de defensa, por si cambia el orden de escuchas.
-       Mismo criterio que el tambor: solo su mitad activa, no todo el
-       elemento — si no, la mitad derecha se quedaria sin scroll. */
+       Mismo criterio que la baraja: solo la caja del mazo, no toda la
+       seccion; si no, alrededor de las cartas no se podria scrollear. */
     if(typeof ruedaEnTambor === 'function' && ruedaEnTambor(e)) return;
     e.preventDefault();
     objetivo=Math.max(0,Math.min(tope(),objetivo+e.deltaY));
