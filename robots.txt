@@ -1,4 +1,20 @@
+# Los bots de busqueda y los de IA se nombran uno a uno, igual que en el
+# sitio anterior: varios ignoran el comodin y solo obedecen su propio
+# User-agent. Las rutas prohibidas no existen hoy, pero se dejan porque
+# no cuesta nada y evita que se indexen si algun dia aparecen.
+
 User-agent: *
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /i/
 
 Sitemap: https://nuvik.digital/sitemap.xml
