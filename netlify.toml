@@ -84,6 +84,37 @@
   to = "/"
   status = 301
 
+# --- atajos de servicio del Next.js anterior ---
+# Ahi eran redirecciones permanentes declaradas en next.config.ts. Al
+# pasar al sitio estatico se quedaron fuera y hoy devuelven 404, que
+# tira a la basura los enlaces que apunten a ellas.
+[[redirects]]
+  from = "/software-a-medida"
+  to = "/servicios/software-a-medida"
+  status = 301
+
+[[redirects]]
+  from = "/automatizacion"
+  to = "/servicios/automatizacion"
+  status = 301
+
+[[redirects]]
+  from = "/diseno-web"
+  to = "/servicios/web-corporativa"
+  status = 301
+
+[[redirects]]
+  from = "/inteligencia-artificial"
+  to = "/servicios/agentes-ia"
+  status = 301
+
+# El sitio anterior lo mandaba a /nexus, que hoy es otra redireccion.
+# Va directo al destino final para no encadenar dos saltos.
+[[redirects]]
+  from = "/chatbots-ia"
+  to = "/trabajo/nexuschatbot"
+  status = 301
+
 # ---------------------------------------------------------------------
 # CABECERAS
 # Las de seguridad se conservan tal cual venian del sitio anterior.
