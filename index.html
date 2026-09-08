@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="theme-color" content="#181a1b" />
+<meta name="theme-color" content="#000000" />
 <title>Nuvik Digital | Soluciones digitales para vender, operar y escalar</title>
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="32x32" href="/icono-32.png" />
@@ -151,6 +151,64 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 .is-ready .main-hero__title .row:nth-child(3) > span{transition-delay:.16s}
 
 /* ============ VALORES (sticky word reveal) ============ */
+/* ---------- fundadores ----------
+   Apilada, no en dos columnas: el titulo va encima de los retratos. Es la
+   ultima seccion antes del pie, asi que no compite con nada al costado y
+   gana teniendo el ancho entero. */
+.fundadores{
+  padding:12vh var(--gutter) 14vh;background:var(--bg);text-align:center;
+}
+.fundadores__intro{margin-bottom:7vh}
+/* El rotulo se ata al mismo ancho que los retratos: asi sus dos extremos
+   caen sobre el borde de la primera y la ultima tarjeta en vez de irse a
+   los cantos de la pantalla. */
+.fundadores__intro .eyebrow{max-width:860px;margin:0 auto}
+.fundadores__title{
+  font-size:5vw;line-height:1.04;letter-spacing:-.035em;
+  max-width:20ch;margin:4vh auto 0;
+}
+.fundadores__lista{
+  list-style:none;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:30px;max-width:860px;margin:0 auto;
+}
+/* La ventanilla se dibuja aqui, no viene en el video.
+   En el material original solo estaba trazada arriba y abajo: en los
+   laterales el ovalo de color se la comia, y por eso se veia partida.
+   Los clips vienen recortados al ovalo y con las esquinas rellenas de su
+   propio color, asi que el radio de aqui puede ser el que convenga sin
+   que asome ningun resto del trazo.
+
+   aspect-ratio reserva la caja antes de que el video cargue, para que la
+   pagina no de un salto cuando aparezca. */
+.fundador__marco{
+  position:relative;aspect-ratio:3/4;
+  background:var(--bg);
+  border:1.6px solid var(--ink);
+  border-radius:22% / 16%;
+  padding:5.5%;
+  overflow:hidden;
+}
+.fundador__marco video{
+  display:block;width:100%;height:100%;
+  object-fit:cover;
+  border-radius:19% / 14%;
+}
+.fundador__nombre{
+  font-size:17px;font-weight:600;letter-spacing:-.015em;margin-top:1.1em;
+  text-align:center;
+}
+.fundador__rol{
+  font-size:13.5px;line-height:1.5;color:#5c5c5c;margin-top:.35em;
+  text-align:center;
+}
+@media (max-width:900px){
+  .fundadores__title{font-size:9vw}
+  .fundadores__intro{margin-bottom:5vh}
+}
+@media (max-width:560px){
+  .fundadores__lista{grid-template-columns:1fr;gap:5vh;max-width:340px}
+}
+
 /* ---------- reticula CRT detras del hero ----------
    El lienzo llena el 100% de su padre y no fija su propio tamano, asi
    que el hero es quien manda la caja. overflow:hidden recorta la
@@ -502,6 +560,11 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 
 @media (max-width:900px){
   .svc-rej{grid-template-columns:1fr;gap:4vh}
+  /* El clamp de escritorio tiene un suelo de 268px. En un telefono de
+     375px ese suelo gana siempre, y sumado al escalonado del mazo la
+     baraja medía casi 490px: se salia de la pantalla por la derecha.
+     Aqui la carta si encoge, manteniendo su proporcion 268:190. */
+  .svc-carta{width:min(66vw,268px);height:min(46.8vw,190px)}
   .svc-panel__titulo{font-size:9vw}
   /* sin esto el navegador se queda con el arrastre vertical y el
      touchmove nunca llega con opcion de cancelarlo */
@@ -541,16 +604,25 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
    la derecha) para que las secciones nuevas no se lean como un injerto.
    El fondo se alterna a mano y no con :nth-of-type, porque entre medio
    hay otras <section> y la cuenta saldria impredecible. */
+/* Invertida respecto de .proceso: el cuerpo a la izquierda y el titulo
+   pegajoso a la derecha. La colocacion es explicita por rejilla y no por
+   orden de escritura, para que el marcado siga leyendose titulo-primero
+   -- que es el orden correcto para un lector de pantalla y el que vale
+   cuando abajo la rejilla se convierte en una sola columna. */
 .prosa{
   padding:12vh var(--gutter);background:var(--bg);
-  display:grid;grid-template-columns:minmax(0,506fr) minmax(0,759fr);
+  display:grid;grid-template-columns:minmax(0,759fr) minmax(0,506fr);
   column-gap:160px;align-items:start;
 }
-.prosa__intro{position:sticky;top:150px}
-.prosa__title{
-  font-size:5vw;line-height:1.04;letter-spacing:-.035em;max-width:17ch;margin:5vh 0 0;
+.prosa__intro{
+  grid-column:2;grid-row:1;
+  position:sticky;top:150px;text-align:right;
 }
-.prosa__cuerpo{max-width:760px}
+.prosa__title{
+  font-size:5vw;line-height:1.04;letter-spacing:-.035em;
+  max-width:17ch;margin:5vh 0 0 auto;
+}
+.prosa__cuerpo{grid-column:1;grid-row:1;max-width:760px}
 .prosa__lead{font-size:19px;line-height:1.55;opacity:.78;max-width:60ch}
 .prosa__destaque{
   font-size:22px;line-height:1.35;letter-spacing:-.02em;
@@ -653,8 +725,12 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
   .proceso__intro{position:static}
   .proceso__title{font-size:9vw}
   .prosa{grid-template-columns:1fr;column-gap:0;row-gap:7vh}
-  .prosa__intro{position:static}
-  .prosa__title{font-size:9vw}
+  /* En una sola columna manda el orden del marcado: titulo y luego
+     cuerpo. Hay que soltar la colocacion explicita o el titulo se
+     quedaria clavado en la fila 1 encima del cuerpo. */
+  .prosa__intro{position:static;grid-column:auto;grid-row:auto;text-align:left}
+  .prosa__cuerpo{grid-column:auto;grid-row:auto}
+  .prosa__title{font-size:9vw;margin-left:0}
   .prosa__lista h3{font-size:21px}
   .prosa__lista--faq h3{font-size:19px}
   .prosa__destaque{font-size:19px}
@@ -686,7 +762,7 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 <meta name="twitter:title" content="Nuvik Digital | Soluciones digitales para vender, operar y escalar" />
 <meta name="twitter:description" content="Nuvik Digital desarrolla sitios web, software a medida, automatización de procesos e inteligencia artificial para empresas que quieren vender, operar y escalar." />
 <meta name="twitter:image" content="https://nuvik.digital/og.webp" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://nuvik.digital/#organization","name":"Nuvik Digital","alternateName":["Nuvik","NUVIK","Nuvik SpA","nuvik.digital"],"url":"https://nuvik.digital/","logo":"https://nuvik.digital/icono-512.png","description":"Nuvik Digital desarrolla soluciones digitales para vender, operar y escalar: diseño web, software a medida, automatización de procesos e integración de inteligencia artificial.","foundingDate":"2026","address":{"@type":"PostalAddress","addressLocality":"Santiago","addressCountry":"CL"},"areaServed":["Chile","LATAM"],"contactPoint":{"@type":"ContactPoint","email":"contacto@nuvik.digital","contactType":"sales","areaServed":["Chile","LATAM"],"availableLanguage":["Spanish","English"]},"sameAs":["https://www.instagram.com/nuvikdigital/","https://cl.linkedin.com/company/nuvikdigital"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://nuvik.digital/#organization","name":"Nuvik Digital","alternateName":["Nuvik","NUVIK","Nuvik SpA","nuvik.digital"],"url":"https://nuvik.digital/","logo":"https://nuvik.digital/icono-512.png","description":"Nuvik Digital desarrolla soluciones digitales para vender, operar y escalar: diseño web, software a medida, automatización de procesos e integración de inteligencia artificial.","foundingDate":"2026","address":{"@type":"PostalAddress","addressLocality":"Santiago","addressCountry":"CL"},"areaServed":["Chile","LATAM"],"founder":[{"@type":"Person","name":"Santiago Delfino","jobTitle":"CEO"},{"@type":"Person","name":"Nicolás Torres Pfäfflin","jobTitle":"CAIO"},{"@type":"Person","name":"Ignacio Machuca","jobTitle":"CTO"}],"contactPoint":{"@type":"ContactPoint","email":"contacto@nuvik.digital","contactType":"sales","areaServed":["Chile","LATAM"],"availableLanguage":["Spanish","English"]},"sameAs":["https://www.instagram.com/nuvikdigital/","https://cl.linkedin.com/company/nuvikdigital"]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"https://nuvik.digital/#website","url":"https://nuvik.digital/","name":"Nuvik Digital","alternateName":["Nuvik","NUVIK","Nuvik SpA","nuvik.digital"],"inLanguage":"es-CL","publisher":{"@id":"https://nuvik.digital/#organization"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","@id":"https://nuvik.digital/#professional-service","name":"Nuvik Digital","url":"https://nuvik.digital/","image":"https://nuvik.digital/og.webp","email":"contacto@nuvik.digital","description":"Estudio digital especializado en diseño web, software a medida, automatización de procesos e integración de inteligencia artificial para empresas.","areaServed":["Chile","LATAM"],"sameAs":["https://www.instagram.com/nuvikdigital/","https://cl.linkedin.com/company/nuvikdigital"]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Qué es Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Nuvik Digital es un estudio digital que diseña y desarrolla soluciones para empresas: sitios web, software a medida, automatización de procesos, dashboards, e-commerce e integración de inteligencia artificial."}},{"@type":"Question","name":"¿Qué hace Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Ayudamos a empresas a mejorar su presencia digital, ordenar operaciones y automatizar tareas mediante tecnología. Creamos desde sitios web orientados a conversión hasta sistemas internos y flujos automatizados."}},{"@type":"Question","name":"¿Qué servicios ofrece Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Ofrecemos diseño web, desarrollo web, software a medida, automatización de procesos, dashboards, e-commerce, integraciones, agentes IA, chatbots y optimización técnica."}},{"@type":"Question","name":"¿Nuvik Digital trabaja con empresas en Chile y LATAM?","acceptedAnswer":{"@type":"Answer","text":"Sí. Nuvik Digital trabaja con empresas en Chile y LATAM que buscan mejorar ventas, operación y escalabilidad mediante soluciones digitales."}},{"@type":"Question","name":"¿Cómo contacto a Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Puedes escribir a contacto@nuvik.digital o abrir el formulario de contacto desde cualquier página para revisar tu proyecto."}}]}</script>
@@ -859,6 +935,7 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
        ahora declaraba cinco preguntas que no aparecian en ninguna parte.
        ======================================================== -->
 
+
   <section class="prosa" id="preguntas">
     <div class="prosa__intro">
       <h2 class="prosa__title">Preguntas frecuentes.</h2>
@@ -888,6 +965,44 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
       </div>
       <p class="prosa__destaque prosa__cierre">Construyamos algo que mueva tu negocio. Cuéntanos qué necesitas, qué objetivo quieres alcanzar y qué está ocurriendo hoy. Revisaremos el contexto antes de proponerte un alcance.</p>
     </div>
+  </section>
+
+  <!-- ============ FUNDADORES ============
+       Retratos en bucle de 6s, sin audio, recortados a su color: la
+       ventanilla la dibuja el CSS porque en el material original solo
+       estaba trazada arriba y abajo.
+       ==================================================== -->
+  <section class="fundadores" id="fundadores">
+    <div class="fundadores__intro">
+      <div class="eyebrow"><span>Quiénes somos</span><span>Tres</span></div>
+      <h2 class="fundadores__title">Los fundadores.</h2>
+    </div>
+    <ul class="fundadores__lista">
+      <li class="fundador">
+        <div class="fundador__marco">
+          <video src="video/fundador-1.mp4?v=9a3c3b27" poster="video/fundador-1.jpg?v=9ea67fde"
+                 muted loop playsinline preload="none" aria-hidden="true"></video>
+        </div>
+        <h3 class="fundador__nombre">Nicolás Torres Pfäfflin</h3>
+        <p class="fundador__rol">CAIO</p>
+      </li>
+      <li class="fundador">
+        <div class="fundador__marco">
+          <video src="video/fundador-2.mp4?v=46a16d91" poster="video/fundador-2.jpg?v=e16e97a5"
+                 muted loop playsinline preload="none" aria-hidden="true"></video>
+        </div>
+        <h3 class="fundador__nombre">Santiago Delfino</h3>
+        <p class="fundador__rol">CEO</p>
+      </li>
+      <li class="fundador">
+        <div class="fundador__marco">
+          <video src="video/fundador-3.mp4?v=da4c253c" poster="video/fundador-3.jpg?v=f1a88397"
+                 muted loop playsinline preload="none" aria-hidden="true"></video>
+        </div>
+        <h3 class="fundador__nombre">Ignacio Machuca</h3>
+        <p class="fundador__rol">CTO</p>
+      </li>
+    </ul>
   </section>
 
   <!-- ============ FOOTER ============ -->
@@ -1140,14 +1255,15 @@ function ruedaEnTambor(e){
   const tabB   = document.getElementById('svcTabB');
 
   /* --- geometria: makeSlot() del componente --- */
-  let chico, SEP_X, SEP_Y, SESGO, CAIDA;
+  let chico, SEP_X, SEP_X_BASE, SEP_Y, SESGO, CAIDA;
 
   /* En el telefono el mazo se aprieta: con la separacion de escritorio
      la carta de adelante se sale por la izquierda. Se vuelve a medir al
      redimensionar -- si no, girar el telefono deja el espaciado viejo. */
   function medir(){
     chico = matchMedia('(max-width:900px)').matches;
-    SEP_X = chico ? 20  : 40;       /* cardDistance */
+    SEP_X_BASE = chico ? 20 : 40;   /* cardDistance, techo */
+    SEP_X = SEP_X_BASE;             /* lo baja dimensionarMazo si no cabe */
     SEP_Y = chico ? 20  : 30;       /* verticalDistance */
     SESGO = chico ? 2   : 4;        /* skewAmount */
     CAIDA = chico ? 240 : 320;      /* hondura del arco de salida */
@@ -1176,6 +1292,15 @@ function ruedaEnTambor(e){
     /* el sesgo inclina la carta y le estira el rectangulo en vertical:
        ancho * tan(sesgo), mitad arriba y mitad abajo. Sin sumarlo, el
        pie de la carta de adelante queda fuera de la zona sensible. */
+    /* La separacion no puede ser un numero fijo: el mazo mide
+       ancho_de_carta + SEP_X*(N-1), y con doce servicios eso se salia de
+       un telefono por la derecha. Se calcula desde el hueco que queda de
+       verdad, y el valor de medir() pasa a ser solo un techo. */
+    const disp = (mazo.parentElement && mazo.parentElement.clientWidth)
+              || document.documentElement.clientWidth;
+    const hueco = Math.max(0, disp - c.offsetWidth);
+    SEP_X = N > 1 ? Math.min(SEP_X_BASE, hueco / (N - 1)) : SEP_X_BASE;
+
     const sesgo = c.offsetWidth * Math.tan(SESGO*Math.PI/180);
     mazo.style.width  = (c.offsetWidth  + SEP_X*(N - 1)) + 'px';
     mazo.style.height = (c.offsetHeight + SEP_Y*(N - 1) + sesgo) + 'px';
@@ -1483,6 +1608,30 @@ function pinProgress(el){
 (function(){
   const h=document.getElementById('header'); let last=0;
   addEventListener('scroll',()=>{const y=scrollY;h.classList.toggle('is-hidden',y>last&&y>innerHeight*.6);last=y},{passive:true});
+})();
+
+/* Retratos de los fundadores: solo cargan y corren mientras se ven.
+   preload="none" en el marcado evita bajar los tres clips en la carga
+   inicial; el observador los enciende al entrar y los pausa al salir,
+   que con la reticula del hero ya dibujando importa. Con
+   prefers-reduced-motion no arrancan: queda el poster fijo. */
+(function(){
+  var vids = document.querySelectorAll('.fundador__marco video');
+  if(!vids.length || reduce) return;
+  var obs = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      var v = e.target;
+      if(e.isIntersecting){
+        /* play() devuelve una promesa que el navegador rechaza si aun no
+           hay permiso; sin el catch queda un error suelto en consola. */
+        var p = v.play();
+        if(p && p.catch) p.catch(function(){});
+      } else {
+        v.pause();
+      }
+    });
+  }, {threshold:.25});
+  vids.forEach(function(v){ obs.observe(v); });
 })();
 
 /* splitting */
