@@ -123,7 +123,21 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 .link:hover .link__inner{transform:translateY(-50%)}
 
 /* ============ HERO ============ */
-.main-hero{position:relative;padding-top:19vh}
+/* El hero pasa a fondo oscuro: la reticula es blanca sobre negro, asi que
+   el titular tiene que invertirse para leerse encima. El header de arriba
+   no necesita nada, usa mix-blend-mode:difference y se aclara solo. */
+.main-hero{
+  position:relative;padding-top:19vh;padding-bottom:7vh;overflow:hidden;
+  background:#000;color:var(--on-dark);
+  /* Pantalla completa. Desde que se quito el video del hero la seccion
+     medida unos 400px de 914 y dejaba un vacio gris enorme antes de que
+     el texto pegajoso de .main-values entrara en cuadro. Con el titular
+     empujado abajo por margin-top:auto, la reticula ocupa ese espacio. */
+  min-height:100vh;display:flex;flex-direction:column;
+}
+.main-hero__title{margin-top:auto}
+/* Todo lo que sea contenido va sobre el lienzo y sobre el velo. */
+.main-hero > *:not(.hero__lienzo){position:relative;z-index:1}
 .main-hero__head{display:flex;justify-content:space-between;align-items:flex-end;padding:0 var(--gutter) 2vh}
 .main-hero__year{display:flex;gap:.6vw}
 .main-hero__title{
@@ -137,12 +151,70 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 .is-ready .main-hero__title .row:nth-child(3) > span{transition-delay:.16s}
 
 /* ============ VALORES (sticky word reveal) ============ */
+/* ---------- reticula CRT detras del hero ----------
+   El lienzo llena el 100% de su padre y no fija su propio tamano, asi
+   que el hero es quien manda la caja. overflow:hidden recorta la
+   distorsion de barril, que empuja pixeles fuera en las esquinas. */
+.hero__lienzo{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero__lienzo canvas{display:block;width:100%;height:100%}
+/* El velo. La reticula es blanca sobre negro y el titular va encima: sin
+   esto el texto compite con los puntos encendidos. Va en ::after, que se
+   pinta despues del lienzo, y por debajo del contenido (z-index 1).
+   El foco oscuro esta abajo a la izquierda, que es donde cae el titular;
+   la ultima parada disuelve el negro en el gris de la seccion siguiente
+   para no repetir el canto duro de antes. */
+.main-hero::after{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(115% 85% at 10% 84%,
+      rgba(0,0,0,.88) 0%, rgba(0,0,0,.46) 44%, rgba(0,0,0,0) 74%),
+    linear-gradient(to bottom,
+      rgba(0,0,0,.82) 0%, rgba(0,0,0,.34) 22%, rgba(0,0,0,0) 40%,
+      rgba(0,0,0,0) 62%, var(--bg-alt) 100%);
+}
+/* El hero movil es mucho mas bajo (unos 312px contra 400 y tantos), asi
+   que el mismo reparto en porcentajes hace que el remate inferior empiece
+   sobre el titular y se coma "A Medida". Se corre hacia abajo y el foco
+   oscuro se refuerza. */
+@media (max-width:720px){
+  .main-hero::after{
+    background:
+      radial-gradient(140% 80% at 6% 88%,
+        rgba(0,0,0,.92) 0%, rgba(0,0,0,.6) 50%, rgba(0,0,0,0) 80%),
+      linear-gradient(to bottom,
+        rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 20%, rgba(0,0,0,.15) 40%,
+        rgba(0,0,0,.15) 82%, var(--bg-alt) 100%);
+  }
+}
+
+/* Vuelve al gris liso: el canto duro que habia bajo el titular lo resuelve
+   ahora la banda CRT, que se intercala entre el hero y esta seccion y
+   remata su borde inferior justo en este mismo --bg-alt. Dejar aqui otro
+   degradado abriria un segundo escalon contra ese remate. */
 .main-values{position:relative;height:300vh;background:var(--bg-alt)}
 .main-values__sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center}
 .main-values__content{width:100%;padding:0 var(--gutter)}
 .main-values__text{font-size:4.3vw;line-height:1.12;letter-spacing:-.03em;max-width:80vw}
-.main-values__text .w{display:inline-block;opacity:.13;transition:opacity .25s linear}
-.main-values__text .w.on{opacity:1}
+/* Reposo antes de entrar: fuera de sitio e invisible. inline-block es
+   obligatorio, un inline no acepta transform. */
+.main-values__text .w{
+  display:inline-block;opacity:0;transform:translateY(.45em);
+  transition:opacity .6s var(--ease), transform .6s var(--ease);
+}
+/* Entrada escalonada hasta el gris de reposo (.13), no hasta el negro:
+   el oscurecido lo sigue haciendo .on con el scroll. */
+.main-values__text.entra .w{
+  opacity:.13;transform:none;
+  transition-delay:calc(var(--i) * 26ms);
+}
+/* Va DESPUES de la regla .entra a proposito: las dos pesan igual (0,2,1)
+   y en un empate manda el orden de aparicion. Si estuviera antes, una
+   palabra ya oscurecida volveria al gris.
+   Repite transform:none por si se recarga a media seccion, donde .on
+   puede aplicarse sin que .entra haya alcanzado a ponerse. */
+.main-values__text .w.on{
+  opacity:1;transform:none;transition:opacity .25s linear;
+}
 .main-values__sub{
   margin-top:4vh;max-width:34vw;opacity:0;transform:translateY(14px);
   transition:all .8s var(--ease);
@@ -464,6 +536,33 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 .paso__nombre{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
 .paso__texto{font-size:16px;line-height:1.55;opacity:.78}
 
+/* ---------- prosa: el texto de marca de la portada ----------
+   Mismo esqueleto que .proceso (intro pegajosa a la izquierda, cuerpo a
+   la derecha) para que las secciones nuevas no se lean como un injerto.
+   El fondo se alterna a mano y no con :nth-of-type, porque entre medio
+   hay otras <section> y la cuenta saldria impredecible. */
+.prosa{
+  padding:12vh var(--gutter);background:var(--bg);
+  display:grid;grid-template-columns:minmax(0,506fr) minmax(0,759fr);
+  column-gap:160px;align-items:start;
+}
+.prosa__intro{position:sticky;top:150px}
+.prosa__title{
+  font-size:5vw;line-height:1.04;letter-spacing:-.035em;max-width:17ch;margin:5vh 0 0;
+}
+.prosa__cuerpo{max-width:760px}
+.prosa__lead{font-size:19px;line-height:1.55;opacity:.78;max-width:60ch}
+.prosa__destaque{
+  font-size:22px;line-height:1.35;letter-spacing:-.02em;
+  margin-top:1.6em;max-width:48ch;
+}
+.prosa__lista{border-top:.8px solid rgba(35,35,35,.24)}
+.prosa__lista > div{padding:2.3em 0;border-bottom:.8px solid rgba(35,35,35,.24)}
+.prosa__lista h3{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.prosa__lista p{font-size:16px;line-height:1.55;opacity:.78;margin-top:.6em;max-width:62ch}
+.prosa__lista--faq h3{font-size:21px}
+.prosa__cierre{opacity:.9}
+
 /* ============ FOOTER ============
    Valores tomados uno a uno de nuvik.digital:
    el social va absoluto dentro de .footer__main (relative), y el texto
@@ -553,6 +652,12 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
   .proceso{grid-template-columns:1fr;column-gap:0;row-gap:7vh}
   .proceso__intro{position:static}
   .proceso__title{font-size:9vw}
+  .prosa{grid-template-columns:1fr;column-gap:0;row-gap:7vh}
+  .prosa__intro{position:static}
+  .prosa__title{font-size:9vw}
+  .prosa__lista h3{font-size:21px}
+  .prosa__lista--faq h3{font-size:19px}
+  .prosa__destaque{font-size:19px}
   .paso{grid-template-columns:38px 1fr;gap:14px;padding:1.8em 0}
   .paso__texto{grid-column:2}
   .paso__nombre{font-size:21px}
@@ -584,7 +689,7 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://nuvik.digital/#organization","name":"Nuvik Digital","alternateName":["Nuvik","NUVIK","Nuvik SpA","nuvik.digital"],"url":"https://nuvik.digital/","logo":"https://nuvik.digital/icono-512.png","description":"Nuvik Digital desarrolla soluciones digitales para vender, operar y escalar: diseño web, software a medida, automatización de procesos e integración de inteligencia artificial.","foundingDate":"2026","address":{"@type":"PostalAddress","addressLocality":"Santiago","addressCountry":"CL"},"areaServed":["Chile","LATAM"],"contactPoint":{"@type":"ContactPoint","email":"contacto@nuvik.digital","contactType":"sales","areaServed":["Chile","LATAM"],"availableLanguage":["Spanish","English"]},"sameAs":["https://www.instagram.com/nuvikdigital/","https://cl.linkedin.com/company/nuvikdigital"]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"https://nuvik.digital/#website","url":"https://nuvik.digital/","name":"Nuvik Digital","alternateName":["Nuvik","NUVIK","Nuvik SpA","nuvik.digital"],"inLanguage":"es-CL","publisher":{"@id":"https://nuvik.digital/#organization"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","@id":"https://nuvik.digital/#professional-service","name":"Nuvik Digital","url":"https://nuvik.digital/","image":"https://nuvik.digital/og.webp","email":"contacto@nuvik.digital","description":"Estudio digital especializado en diseño web, software a medida, automatización de procesos e integración de inteligencia artificial para empresas.","areaServed":["Chile","LATAM"],"sameAs":["https://www.instagram.com/nuvikdigital/","https://cl.linkedin.com/company/nuvikdigital"]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Qué es Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Nuvik Digital es un estudio digital que diseña y desarrolla soluciones para empresas: sitios web, software a medida, automatización de procesos, dashboards, e-commerce e integración de inteligencia artificial."}},{"@type":"Question","name":"¿Qué hace Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Ayudamos a empresas a mejorar su presencia digital, ordenar operaciones y automatizar tareas mediante tecnología. Creamos desde sitios web orientados a conversión hasta sistemas internos y flujos automatizados."}},{"@type":"Question","name":"¿Qué servicios ofrece Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Ofrecemos diseño web, desarrollo web, software a medida, automatización de procesos, dashboards, e-commerce, integraciones, agentes IA, chatbots y optimización técnica."}},{"@type":"Question","name":"¿Nuvik Digital trabaja con empresas en Chile y LATAM?","acceptedAnswer":{"@type":"Answer","text":"Sí. Nuvik Digital trabaja con empresas en Chile y LATAM que buscan mejorar ventas, operación y escalabilidad mediante soluciones digitales."}},{"@type":"Question","name":"¿Cómo contacto a Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Puedes escribir a contacto@nuvik.digital o agendar una reunión desde la página de contacto para revisar tu proyecto."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Qué es Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Nuvik Digital es un estudio digital que diseña y desarrolla soluciones para empresas: sitios web, software a medida, automatización de procesos, dashboards, e-commerce e integración de inteligencia artificial."}},{"@type":"Question","name":"¿Qué hace Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Ayudamos a empresas a mejorar su presencia digital, ordenar operaciones y automatizar tareas mediante tecnología. Creamos desde sitios web orientados a conversión hasta sistemas internos y flujos automatizados."}},{"@type":"Question","name":"¿Qué servicios ofrece Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Ofrecemos diseño web, desarrollo web, software a medida, automatización de procesos, dashboards, e-commerce, integraciones, agentes IA, chatbots y optimización técnica."}},{"@type":"Question","name":"¿Nuvik Digital trabaja con empresas en Chile y LATAM?","acceptedAnswer":{"@type":"Answer","text":"Sí. Nuvik Digital trabaja con empresas en Chile y LATAM que buscan mejorar ventas, operación y escalabilidad mediante soluciones digitales."}},{"@type":"Question","name":"¿Cómo contacto a Nuvik Digital?","acceptedAnswer":{"@type":"Answer","text":"Puedes escribir a contacto@nuvik.digital o abrir el formulario de contacto desde cualquier página para revisar tu proyecto."}}]}</script>
 <!-- /seo -->
 </head>
 <body>
@@ -610,6 +715,12 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 
   <!-- ============ HERO ============ -->
   <section class="main-hero">
+    <!-- La reticula CRT va detras del titular. Es decoracion pura: la
+         esconde de lectores de pantalla y no recibe eventos, pero el
+         script sigue el cursor a nivel de ventana, asi que reacciona
+         igual desde atras. Si no hay WebGL queda el negro de la
+         seccion, que es lo que el texto necesita para leerse. -->
+    <div class="hero__lienzo" data-terminal aria-hidden="true"></div>
     <div class="main-hero__head">
       <div>
         <p><strong>Estudio digital</strong></p>
@@ -697,7 +808,86 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
       <h2 class="proceso__title" data-split-lines>Primero nos conocemos. Después construimos.</h2>
       <p class="proceso__lead">Partimos con una conversación clara para entender tu negocio, ordenar prioridades y construir solo lo que realmente mueve el proyecto.</p>
     </div>
-    <div class="proceso__grid" id="procesoGrid"><!-- inyectado --></div>
+    <!-- Las siete etapas van escritas aca y no inyectadas desde PROCESO:
+         asi existen en el HTML que sirve el servidor. El arreglo sigue en
+         el script como respaldo, pero solo pinta si esto llegara vacio. -->
+    <div class="proceso__grid" id="procesoGrid">
+      <div class="paso">
+        <p class="paso__num">01</p>
+        <h3 class="paso__nombre">Contacto inicial</h3>
+        <p class="paso__texto">Conversamos contigo para entender qué quieres construir, qué problema necesitas resolver y qué resultado esperas.</p>
+      </div>
+      <div class="paso">
+        <p class="paso__num">02</p>
+        <h3 class="paso__nombre">Conocernos</h3>
+        <p class="paso__texto">Revisamos tu negocio, tus clientes y tus procesos actuales para detectar dónde hay fricción y oportunidades concretas.</p>
+      </div>
+      <div class="paso">
+        <p class="paso__num">03</p>
+        <h3 class="paso__nombre">Ruta del proyecto</h3>
+        <p class="paso__texto">Ordenamos páginas, flujos, funcionalidades, integraciones y prioridades antes de empezar a diseñar o desarrollar.</p>
+      </div>
+      <div class="paso">
+        <p class="paso__num">04</p>
+        <h3 class="paso__nombre">Diseño visual</h3>
+        <p class="paso__texto">Creamos una interfaz clara, profesional y alineada con la marca, pensada para guiar al usuario hacia la acción.</p>
+      </div>
+      <div class="paso">
+        <p class="paso__num">05</p>
+        <h3 class="paso__nombre">Desarrollo</h3>
+        <p class="paso__texto">Construimos con código limpio, responsive, veloz y preparado para crecer sin depender de parches improvisados.</p>
+      </div>
+      <div class="paso">
+        <p class="paso__num">06</p>
+        <h3 class="paso__nombre">Revisión</h3>
+        <p class="paso__texto">Probamos contigo cada parte del sistema, ajustamos detalles y validamos que funcione en casos reales.</p>
+      </div>
+      <div class="paso">
+        <p class="paso__num">07</p>
+        <h3 class="paso__nombre">Lanzamiento y mejora</h3>
+        <p class="paso__texto">Publicamos, medimos y dejamos la base lista para seguir optimizando, automatizando y escalando.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TEXTO DE MARCA ============
+       Estas tres secciones estaban en la portada del sitio anterior y se
+       perdieron en la reescritura estatica: la portada bajo de 872 a 154
+       palabras. Van escritas en el HTML, no inyectadas, porque son la
+       parte que un buscador tiene que poder leer sin ejecutar nada.
+       Las preguntas ademas respaldan el FAQPage del <head>, que hasta
+       ahora declaraba cinco preguntas que no aparecian en ninguna parte.
+       ======================================================== -->
+
+  <section class="prosa" id="preguntas">
+    <div class="prosa__intro">
+      <h2 class="prosa__title">Preguntas frecuentes.</h2>
+    </div>
+    <div class="prosa__cuerpo">
+      <div class="prosa__lista prosa__lista--faq">
+        <div>
+          <h3>¿Qué es Nuvik Digital?</h3>
+          <p>Nuvik Digital es un estudio digital que diseña y desarrolla soluciones para empresas: sitios web, software a medida, automatización de procesos, dashboards, e-commerce e integración de inteligencia artificial.</p>
+        </div>
+        <div>
+          <h3>¿Qué hace Nuvik Digital?</h3>
+          <p>Ayudamos a empresas a mejorar su presencia digital, ordenar operaciones y automatizar tareas mediante tecnología. Creamos desde sitios web orientados a conversión hasta sistemas internos y flujos automatizados.</p>
+        </div>
+        <div>
+          <h3>¿Qué servicios ofrece Nuvik Digital?</h3>
+          <p>Ofrecemos diseño web, desarrollo web, software a medida, automatización de procesos, dashboards, e-commerce, integraciones, agentes IA, chatbots y optimización técnica.</p>
+        </div>
+        <div>
+          <h3>¿Nuvik Digital trabaja con empresas en Chile y LATAM?</h3>
+          <p>Sí. Nuvik Digital trabaja con empresas en Chile y LATAM que buscan mejorar ventas, operación y escalabilidad mediante soluciones digitales.</p>
+        </div>
+        <div>
+          <h3>¿Cómo contacto a Nuvik Digital?</h3>
+          <p>Puedes escribir a contacto@nuvik.digital o abrir el formulario de contacto desde cualquier página para revisar tu proyecto.</p>
+        </div>
+      </div>
+      <p class="prosa__destaque prosa__cierre">Construyamos algo que mueva tu negocio. Cuéntanos qué necesitas, qué objetivo quieres alcanzar y qué está ocurriendo hoy. Revisaremos el contexto antes de proponerte un alcance.</p>
+    </div>
   </section>
 
   <!-- ============ FOOTER ============ -->
@@ -865,12 +1055,20 @@ document.getElementById('worksBody').style.height=(N*100)+'vh';
    ============================================================ */
 
 
-document.getElementById('procesoGrid').innerHTML=PROCESO.map(([n,t,d])=>`
+/* Las etapas ya vienen escritas en el HTML. Esto solo actua de respaldo:
+   si alguien vacia el contenedor, se vuelve a pintar desde PROCESO. Pintar
+   siempre borraria el texto que sirve el servidor y lo dejaria dependiendo
+   de que el script corra. */
+(function(){
+  var rej = document.getElementById('procesoGrid');
+  if(!rej || rej.querySelector('.paso')) return;
+  rej.innerHTML = PROCESO.map(([n,t,d])=>`
   <div class="paso">
     <p class="paso__num">${esc(n)}</p>
     <h3 class="paso__nombre">${esc(t)}</h3>
     <p class="paso__texto">${esc(d)}</p>
   </div>`).join('');
+})();
 
 /* Zona activa de la baraja: la caja del mazo y nada mas.
    Antes era el 66% izquierdo del contenedor, que era la forma del
@@ -1290,6 +1488,22 @@ function pinProgress(el){
 /* splitting */
 document.querySelectorAll('[data-split]').forEach(el=>{
   el.innerHTML=el.textContent.trim().split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
+
+  /* Entrada: las palabras suben escalonadas hasta su gris de reposo la
+     primera vez que la seccion entra en cuadro. El oscurecido por scroll
+     (.on) es otra capa y sigue funcionando igual encima de esta.
+     El escalonado va en una variable por palabra y el retraso se calcula
+     en CSS, asi no hay un temporizador por palabra en JS. */
+  const ws=el.querySelectorAll('.w');
+  ws.forEach((w,i)=>w.style.setProperty('--i',i));
+
+  if(reduce){ el.classList.add('entra'); return; }
+
+  new IntersectionObserver((es,o)=>{
+    if(!es[0].isIntersecting) return;
+    el.classList.add('entra');
+    o.disconnect();
+  },{threshold:.2}).observe(el);
 });
 /* El envoltorio de cada palabra va en <span>, no en <i>: <i> es
    italica por defecto, y como Inter Tight se carga solo con pesos (sin
@@ -1374,9 +1588,10 @@ if(!reduce){
 aplicar();
 
 /* El efecto de fluido (humo) se retiro del landing. El modulo sigue en
-   assets/fluido.js por si se quiere volver a montar. */
+   assets/fluido.js?v=3bcb7af8 por si se quiere volver a montar. */
 
 </script>
+<script src="assets/terminal.js?v=eac07d5f" defer></script>
 <script src="assets/transicion.js?v=604844cf"></script>
 <script src="assets/contacto.js?v=2a37a56d"></script>
 
