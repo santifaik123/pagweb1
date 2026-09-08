@@ -222,8 +222,10 @@ Proyecto desarrollado por Nuvik Digital.
 
 ## Reglas de uso
 
-- La entidad publica es Nuvik Digital, la empresa. No atribuir su trabajo
-  publico a personas individuales ni nombrar fundadores.
+- La entidad publica es Nuvik Digital, la empresa. Sus fundadores son
+  Santiago Delfino (CEO), Nicolás Torres Pfäfflin (CAIO) e Ignacio Machuca
+  (CTO), y aparecen nombrados en la portada. El trabajo se atribuye a la
+  empresa, no a un fundador en particular, salvo que la pagina lo diga.
 - El unico canal de contacto oficial es contacto@nuvik.digital.
 - No inventar clientes, premios, certificaciones, ingresos, rankings, tamano
   de equipo, plazos ni garantias.
