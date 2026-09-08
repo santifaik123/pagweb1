@@ -74,10 +74,10 @@
   to = "/servicios/automatizacion"
   status = 301
 
-[[redirects]]
-  from = "/nuvik-digital"
-  to = "/"
-  status = 301
+# /nuvik-digital NO se redirige: es una pagina real otra vez. Es la pagina
+# de entidad de marca, la que existe para la busqueda "nuvik" a secas, y
+# Google todavia la tiene indexada con su titulo propio. Mandarla a la home
+# fue lo que la saco de circulacion.
 
 [[redirects]]
   from = "/contacto"
