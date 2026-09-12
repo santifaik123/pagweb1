@@ -79,6 +79,8 @@ a{color:inherit;text-decoration:none}
 
 .ban--itoe{background:#ffffff}
 
+.ban--twinknots{background:#f6f1e8}
+
 /* sello + nombre, mismo lockup del landing */
 .lock{
   position:absolute;inset:0;z-index:5;
@@ -98,6 +100,12 @@ a{color:inherit;text-decoration:none}
 .lock--itoe .lock__nombre sup{
   font-size:.42em;vertical-align:super;letter-spacing:0;font-weight:300;
 }
+/* TwinKnots usa el logo partido en dos, igual que en el landing: el
+   adorno del nudo de sello y el nombre debajo. Entero se comia la pieza
+   y no calzaba en altura con los otros lockups. */
+.lock--twinknots .lock__sello{max-width:54cqw;max-height:26%}
+.lock--twinknots .lock__nombre{line-height:0}
+.lock--twinknots .lock__nombre img{display:block;width:50cqw;height:auto}
 /* Sin velo: las piezas nunca se apagan. El aviso de que una esta
    apuntada es que crece un poco y se adelanta — eso lo hace el bucle
    en JS, porque la transform la reescribe cada cuadro. */
@@ -183,6 +191,9 @@ a{color:inherit;text-decoration:none}
   }
   .pieza{position:static!important;width:auto!important;transform:none!important;opacity:1!important}
   .pieza{aspect-ratio:4/3!important}
+  /* con un numero impar de piezas la ultima quedaria sola en media
+     fila: se la damos entera para que la rejilla cierre pareja */
+  .pieza:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:2/1!important}
   .pieza > img{aspect-ratio:4/3}
   .pieza::after{opacity:0}
   .pie{position:static;flex-direction:column;align-items:flex-start;gap:2.4vh;padding:0 var(--gutter) 8vh}
@@ -244,29 +255,37 @@ a{color:inherit;text-decoration:none}
 </footer>
 
 <script>
-/* Cuatro piezas, una por esquina de un cuadrado. Todas del mismo
-   tamano: con solo cuatro, una rejilla pareja lee mejor que el anillo
-   suelto que habia antes.
-   esq = esquina, en sentido horario desde arriba-izquierda. */
-var LADO  = 24.0;    /* ancho de cada pieza, en % del escenario */
+/* Las piezas se reparten parejas sobre un anillo, una por vertice de un
+   poligono regular: con cuatro era un cuadrado, con cinco un pentagono.
+   El angulo lo calcula PASO a partir de cuantas hay, asi que sumar o
+   sacar un proyecto no obliga a reescribir posiciones a mano.
+   vert = vertice, en sentido horario desde arriba. */
+var LADO  = 20.0;    /* ancho de cada pieza, en % del escenario */
 var RAZON = 1.5;     /* proporcion de la caja */
-var RADIO = 43.0;    /* media diagonal del cuadrado, en % del ALTO.
-                        No mas: en el extremo del vaiven una esquina
-                        apunta recto arriba y con 46 se salia de pantalla. */
+var RADIO = 35.0;    /* radio del anillo, en % del ALTO.
+                        Bajo de 43 al pasar a cinco: el pentagono pone
+                        una pieza apuntando recto arriba, y con el radio
+                        del cuadrado esa pieza se metia bajo la barra de
+                        navegacion en pantallas de poco alto (1366x768). */
 var PIEZAS = [
-  {esq:0, foto:'dar-io-showcase-2026-06-23',        pos:'50% 44%', dest:'dar-io'},
-  {esq:1, foto:'nexus-chatbot-showcase-2026-06-23', pos:'50% 44%', dest:'nexuschatbot'},
-  {esq:2, ban:'itoe',      sello:1, dest:'ito-e'},
-  {esq:3, ban:'machreach', sello:1, dest:'machreach'}
+  {vert:0, ban:'twinknots', sello:1, dest:'twinknots'},
+  {vert:1, foto:'dar-io-showcase-2026-06-23',        pos:'50% 44%', dest:'dar-io'},
+  {vert:2, foto:'nexus-chatbot-showcase-2026-06-23', pos:'50% 44%', dest:'nexuschatbot'},
+  {vert:3, ban:'itoe',      sello:1, dest:'ito-e'},
+  {vert:4, ban:'machreach', sello:1, dest:'machreach'}
 ];
-/* mismo lockup que el landing: sello + nombre en tipografia */
+var PASO = 2 * Math.PI / PIEZAS.length;   /* separacion entre vertices */
+/* mismo lockup que el landing: sello + nombre en tipografia. Sin
+   'nombre', la pieza queda solo con el sello — es lo que necesita
+   TwinKnots, cuyo logo ya trae el nombre dibujado. */
 var MARCAS = {
   machreach: {sello:'../logos/machreach.svg',          nombre:'Mach<i style="color:#ff6a2b">Reach</i>', capas:['b-glow']},
-  itoe:      {sello:'../logos/ito-e-mark.png',         nombre:'ITO<sup>e</sup>',                capas:[]}
+  itoe:      {sello:'../logos/ito-e-mark.png',         nombre:'ITO<sup>e</sup>',                capas:[]},
+  twinknots: {sello:'../logos/twinknots-emblema.webp', nombre:'<img src="../logos/twinknots-nombre.webp" alt="">', capas:[]}
 };
 var NOMBRES = {
   'dar-io':'Dar.io', 'nexuschatbot':'NexusChatBot',
-  'machreach':'MachReach', 'ito-e':'ITO-e'
+  'machreach':'MachReach', 'ito-e':'ITO-e', 'twinknots':'TwinKnots'
 };
 
 var campo  = document.getElementById('campo');
@@ -292,16 +311,17 @@ var nodos = PIEZAS.map(function(p, i){
       + (p.sello
           ? '<div class="lock lock--' + p.ban + '">'
             + '<img class="lock__sello" src="' + M.sello + '" alt="">'
-            + '<span class="lock__nombre">' + M.nombre + '</span></div>'
+            + (M.nombre ? '<span class="lock__nombre">' + M.nombre + '</span>' : '')
+            + '</div>'
           : '');
   }
 
-  /* Las esquinas van a -135, -45, 45 y 135 grados. El angulo se guarda
-     y la posicion se calcula en el bucle compensando el aspecto: si no,
-     el cuadrado se aplastaria a rectangulo. */
+  /* El primer vertice apunta recto arriba (-90 grados) y los demas se
+     reparten cada PASO. El angulo se guarda y la posicion se calcula en
+     el bucle compensando el aspecto: si no, el poligono se aplastaria. */
   var n = {
     el: el,
-    ang: (-135 + p.esq * 90) * Math.PI / 180,
+    ang: -Math.PI / 2 + p.vert * PASO,
     fase: i * 1.37,                          /* cada pieza respira distinto */
     hondo: 0.8
   };
@@ -333,15 +353,13 @@ function mostrar(t){
 }
 
 /* ---------- movimiento ----------
-   Con cuatro piezas en cuadrado ya no hay orbita: girar el cuadrado lo
-   convertiria en rombo la mitad del tiempo. Queda el flote, el arrastre
-   del puntero y el realce al apuntar. Se fue tambien el empujon con la
-   rueda, que solo tenia sentido para hacer girar el anillo. */
+   El anillo no gira solo: queda el arrastre del puntero, el realce al
+   apuntar y el giro que pide la rueda. */
 var ASPECTO = 1110 / 783;        /* el escenario es mas ancho que alto */
-/* El cuadrado no se mueve solo: lo gira la rueda del raton. La pagina
+/* El poligono no se mueve solo: lo gira la rueda del raton. La pagina
    no tiene scroll propio, asi que la rueda queda libre para esto.
-   No hace falta topar el giro: los extremos se repiten cada 90 grados
-   y el peor caso (45 grados, o sea rombo) ya cabe en pantalla. */
+   No hace falta topar el giro: la figura se repite cada PASO y, como
+   todas las piezas viven en el mismo radio, cualquier angulo cabe. */
 var POR_RUEDA = 0.0016;          /* radianes por unidad de deltaY */
 var giroDestino = 0;             /* a donde va */
 var giro = 0;                    /* donde esta, persiguiendo al destino */

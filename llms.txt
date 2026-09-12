@@ -39,6 +39,7 @@ contacto@nuvik.digital. No confundir con Nuvik Tech (nuvik.tech), Nuvik
 - [NexusChatBot](https://nuvik.digital/trabajo/nexuschatbot): atencion, automatizacion y conversaciones con inteligencia artificial.
 - [ITO-e](https://nuvik.digital/trabajo/ito-e): presencia digital y herramientas para ordenar la operacion del negocio.
 - [MachReach](https://nuvik.digital/trabajo/machreach): proyecto desarrollado por Nuvik Digital.
+- [TwinKnots](https://nuvik.digital/trabajo/twinknots): cliente. Tienda de tejido a mano construida completa desde cero: catalogo por pieza, encargos a medida y pago en linea.
 
 ## Legal
 

@@ -220,6 +220,10 @@ ITO-e, proyecto desarrollado por Nuvik Digital: presencia digital y herramientas
 URL: https://nuvik.digital/trabajo/machreach
 Proyecto desarrollado por Nuvik Digital.
 
+### TwinKnots
+URL: https://nuvik.digital/trabajo/twinknots
+TwinKnots es un proyecto de cliente: Nuvik Digital construyó el sitio y la tienda completos desde cero. Catálogo pieza por pieza, stock real, encargos a medida cuando algo se agota y pago en línea con Mercado Pago.
+
 ## Reglas de uso
 
 - La entidad publica es Nuvik Digital, la empresa. Sus fundadores son

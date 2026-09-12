@@ -206,7 +206,39 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
   .fundadores__intro{margin-bottom:5vh}
 }
 @media (max-width:560px){
+  /* En celular la seccion de retratos se saca: tres videos apilados
+     alargaban la pagina sin aportar y cargaban de mas en movil. */
+  .fundadores{display:none}
   .fundadores__lista{grid-template-columns:1fr;gap:5vh;max-width:340px}
+}
+
+/* ---------- pantalla de carga ----------
+   z por encima de la cortina de transicion (9999): mientras se carga
+   manda esta capa. El negro es el mismo del hero y del theme-color, asi
+   que al retirarse no hay salto de tono. */
+.carga{
+  position:fixed;inset:0;z-index:10000;background:#000;color:var(--on-dark);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:24px;
+  transition:opacity .56s var(--ease);
+}
+.carga--fuera{opacity:0;pointer-events:none}
+.carga__marca{display:block;width:44px;height:44px;opacity:.92}
+.carga__marca img{display:block;width:100%;height:100%}
+.carga__barra{
+  display:block;width:min(190px,44vw);height:1px;
+  background:rgba(241,241,241,.22);overflow:hidden;
+}
+.carga__barra span{
+  display:block;height:100%;width:0;background:var(--on-dark);
+  transition:width .3s var(--ease);
+}
+.carga__pct{
+  font-size:11px;letter-spacing:.14em;opacity:.5;
+  font-variant-numeric:tabular-nums;
+}
+@media (prefers-reduced-motion:reduce){
+  .carga,.carga__barra span{transition:none}
 }
 
 /* ---------- reticula CRT detras del hero ----------
@@ -355,6 +387,8 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
   .lockup{--sello-an:30vw; --sello-al:16vh; --aire:1.8vh}
   .lockup__nombre{font-size:8vw}
   .lockup--itoe{--sello-an:34vw; --sello-al:18vh}
+  .lockup--twinknots{--sello-an:56vw}
+  .lockup--twinknots .lockup__nombre img{height:7.5vw}
 }
 .works__item-photo img{width:100%;height:100%;object-fit:cover}
 /* En vertical, 'cover' recorta una captura 16:9 a una tira central y no
@@ -413,6 +447,19 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 .lockup--itoe .lockup__nombre sup{
   font-size:.42em;vertical-align:super;letter-spacing:0;font-weight:300;
 }
+
+/* TWINKNOTS - crudo calido, el color del hilo sin tenir */
+.banner--twinknots{background:#f6f1e8}
+/* El logo viene partido en dos archivos a proposito: el adorno del nudo
+   entra como sello y el nombre como .lockup__nombre. Entero ocupaba mas
+   alto que la caja comun, asi que el nudo subia por encima del sello de
+   ITO-e y el nombre caia justo donde va el de la diapositiva anterior.
+   Partido, --sello-al sigue siendo el de todos: el nudo queda a la misma
+   altura que la marca de ITO-e y el nombre baja al renglon que le toca.
+   Solo se ensancha la caja, que no mueve nada en vertical. */
+.lockup--twinknots{--sello-an:20vw}
+.lockup--twinknots .lockup__nombre{line-height:0}
+.lockup--twinknots .lockup__nombre img{display:block;height:3.4vw;width:auto}
 
 @media (max-width:1025px){
 }
@@ -611,18 +658,31 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
    cuando abajo la rejilla se convierte en una sola columna. */
 .prosa{
   padding:12vh var(--gutter);background:var(--bg);
-  display:grid;grid-template-columns:minmax(0,759fr) minmax(0,506fr);
-  column-gap:160px;align-items:start;
+  /* La columna del cuerpo se ajusta al texto en vez de sobrarle. Medía
+     725px para un texto tope de 574: esos 151px muertos, sumados a 160
+     de separacion, abrian un vacio de 311px justo en el centro. */
+  display:grid;grid-template-columns:minmax(0,620fr) minmax(0,560fr);
+  column-gap:clamp(40px,5vw,96px);align-items:start;
+  /* Tope de ancho y centrado. Con las columnas atadas al viewport, en una
+     pantalla ancha el cuerpo se iba al canto izquierdo y el titulo al
+     derecho, y lo que crecia era el vacio del medio. */
+  max-width:1240px;margin-inline:auto;
 }
 .prosa__intro{
   grid-column:2;grid-row:1;
   position:sticky;top:150px;text-align:right;
 }
 .prosa__title{
-  font-size:5vw;line-height:1.04;letter-spacing:-.035em;
-  max-width:17ch;margin:5vh 0 0 auto;
+  /* Mas grande y con la linea mas corta: los renglones se ensanchan y el
+     canto izquierdo del titulo se acerca al texto, en vez de quedarse
+     pegado al borde derecho de la pantalla con el vacio en medio. */
+  /* Grande de verdad, al tamano de los otros titulares del sitio. Con la
+     linea corta el titulo medía 394px sueltos contra el canto derecho:
+     era el propio titulo el que dejaba el hueco, no la rejilla. */
+  font-size:clamp(52px,7.6vw,132px);line-height:.98;letter-spacing:-.04em;
+  max-width:9ch;margin:3vh 0 0 auto;
 }
-.prosa__cuerpo{grid-column:1;grid-row:1;max-width:760px}
+.prosa__cuerpo{grid-column:1;grid-row:1;max-width:660px}
 .prosa__lead{font-size:19px;line-height:1.55;opacity:.78;max-width:60ch}
 .prosa__destaque{
   font-size:22px;line-height:1.35;letter-spacing:-.02em;
@@ -769,6 +829,16 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 <!-- /seo -->
 </head>
 <body>
+<!-- La pantalla de carga va escrita aca y no la crea un script: tiene
+     que tapar desde el primer pintado, y para cuando el primer script
+     corre el navegador ya dibujo algo. Sin JS se esconde sola. -->
+<div class="carga" id="carga" aria-hidden="true">
+  <span class="carga__marca"><img src="logos/nuvik-symbol-white.png" alt="" width="44" height="44"></span>
+  <span class="carga__barra"><span id="cargaBarra"></span></span>
+  <span class="carga__pct" id="cargaPct">0</span>
+</div>
+<noscript><style>.carga{display:none!important}</style></noscript>
+
 <div class="cortina cortina--dentro"></div>
 <noscript><style>.cortina{display:none}</style></noscript>
 
@@ -1037,7 +1107,8 @@ html.intro-activo,html.intro-activo body{overflow:hidden}
 </div>
 </div>
 
-<script src="assets/intro.js?v=0039afd4" defer></script>
+<script src="assets/carga.js?v=7d6a3825" defer></script>
+<script src="assets/intro.js?v=5f79fe96" defer></script>
 <script>
 /* ============================================================
    CONTENIDO
@@ -1093,6 +1164,17 @@ const CASOS=[
     tipo:"banner", marca:"itoe", slug:"ito-e", sello:"logos/ito-e-mark.png",
     nombreHTML:'ITO<sup>e</sup>', enlace:"https://ito-e.cl",
     nota:"Proyecto de cliente. El alcance fue el sitio corporativo; la plataforma de inspección es del equipo de ITO-e."
+  },
+  {
+    id:"05", nombre:"TwinKnots", anio:"2026",
+    rubro:"Cliente · e-commerce",
+    rol:"Cliente — marca, sitio y tienda completos, desde cero",
+    titular:"Una tienda para piezas que se tejen de a una.",
+    descripcion:"E-commerce de tejido a crochet con catálogo por pieza, stock real, encargo a medida cuando algo se agota y pago en línea con Mercado Pago.",
+    servicios:"Marca, UX/UI, Desarrollo, E-commerce, Pagos",
+    tipo:"banner", marca:"twinknots", slug:"twinknots", sello:"logos/twinknots-emblema.webp",
+    nombreHTML:'<img src="logos/twinknots-nombre.webp" alt="TwinKnots">',
+    enlace:"https://twinknots.netlify.app"
   }
 ];
 
@@ -1115,7 +1197,8 @@ const N=CASOS.length;
 /* nuvik ya no lleva capas: su fondo es la viñeta del video, a secas */
 const CAPAS={nuvik:[],
              machreach:["b-glow"],            /* sin los aros concentricos */
-             itoe:[]};
+             itoe:[],
+             twinknots:[]};
 const arte=m=>(CAPAS[m]||[]).map(c=>`<span class="banner__art ${c}"></span>`).join('');
 
 const destino=c=>c.href||(c.slug?`trabajo/${c.slug}.html`:null);

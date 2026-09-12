@@ -10,6 +10,26 @@
    sitio real y se retira sola al terminar.
    ============================================================ */
 (function(){
+  /* El intro no arranca solo: espera el visto bueno de la pantalla de
+     carga. Sus ocho piezas son imagenes y el reloj parte en el primer
+     cuadro pintado, asi que empezar antes de tenerlas decodificadas se
+     come el principio de la animacion mostrando huecos.
+     Si carga.js no esta o ya termino, arranca de inmediato: la compuerta
+     no puede ser un punto de fallo que deje la pagina sin intro. */
+  var puerta = window.__nuvikCarga;
+  if(puerta && !puerta.listo){
+    addEventListener('nuvik:carga-fin', iniciar, {once:true});
+    /* seguro por si el evento no llega nunca */
+    setTimeout(function(){ iniciar(); }, 6000);
+  } else {
+    iniciar();
+  }
+
+  var arrancado = false;
+  function iniciar(){
+  if(arrancado) return;
+  arrancado = true;
+
   const TOTAL = 3.3;
   const PIEZAS = [
     { src:'intro/p3.png', cx:0.3403, cy:0.3401, tipo:'s', at:0.00 },
@@ -184,4 +204,5 @@
   /* Si el rAF nunca llega a correr, el intro no puede dejar la pagina
      tapada: a los 6s se retira igual. */
   setTimeout(terminar, 6000);
+  }
 })();
